@@ -2,9 +2,8 @@ package com.rrhh.dashboard.service;
 
 import com.rrhh.dashboard.Empleados.dtos.EmpleadoDTO;
 import com.rrhh.dashboard.Migracion.Dtos.AsistenciaDiariaDTO;
-import com.rrhh.dashboard.Migracion.Dtos.ProductividadDiariaDTO;
 import com.rrhh.dashboard.Migracion.Dtos.ResumenKpiDTO;
-
+import com.rrhh.dashboard.Productividad.Dtos.ProductividadDiariaDTO;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -104,11 +103,7 @@ public class ExcelDataService {
             dto.setApellido(getString(row.getCell(2)));
             dto.setSector(getString(row.getCell(3)));
             dto.setPuesto(getString(row.getCell(4)));
-            dto.setSupervisor(getString(row.getCell(5)));
             dto.setTurno(getString(row.getCell(6)));
-            dto.setEstado(getString(row.getCell(7)));
-            dto.setFechaIngreso(getString(row.getCell(8)));
-
             list.add(dto);
         }
 
@@ -129,14 +124,7 @@ public class ExcelDataService {
 
             ProductividadDiariaDTO dto = new ProductividadDiariaDTO();
 
-            dto.setIdEmpleado(getString(row.getCell(0)));
             dto.setFecha(getLocalDate(row.getCell(1)));
-            dto.setPedidosProcesados(getInt(row.getCell(2)));
-            dto.setPedidosEsperados(getInt(row.getCell(3)));
-            dto.setProductividad(getDouble(row.getCell(4)));
-            dto.setErrores(getInt(row.getCell(5)));
-            dto.setEficiencia(getDouble(row.getCell(6)));
-
             list.add(dto);
         }
 

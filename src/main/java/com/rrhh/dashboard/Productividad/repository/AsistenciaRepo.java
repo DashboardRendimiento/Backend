@@ -1,4 +1,4 @@
-package com.rrhh.dashboard.Productividad.Entity.repository;
+package com.rrhh.dashboard.Productividad.repository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,7 +13,6 @@ import com.rrhh.dashboard.Productividad.Entity.AsistenciaDiaria;
 
 @Repository
 public interface AsistenciaRepo extends JpaRepository<AsistenciaDiaria, Long> {
-    // Solo métodos de consulta personalizados si los necesitas
     List<Empleados> findByIdEmpleado(String idEmpleado);
     List<AsistenciaDiaria> findByFechaBetween(LocalDate fechaInicio, LocalDate fechaFin);
 }

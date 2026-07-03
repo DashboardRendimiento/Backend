@@ -11,7 +11,7 @@ import com.rrhh.dashboard.Empleados.Entity.Empleados;
 public interface EmpleadoRepository extends JpaRepository<Empleados, Long> {
 
     List<Empleados> findBySector(String sector);
-
+    
     Long countBySector(String sector);
     List<Empleados> findByPuesto(String puesto);
 

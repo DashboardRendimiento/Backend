@@ -8,10 +8,8 @@ public class EmpleadoDTO {
     private String idEmpleado;
     private String nombre;
     private String apellido;
+    private Number dni;
     private String sector;
     private String puesto;
-    private String supervisor;
     private String turno;
-    private String estado;
-    private String fechaIngreso;
 }

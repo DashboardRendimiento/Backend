@@ -1,6 +1,7 @@
 package com.rrhh.dashboard.Empleados.Entity;
 
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,15 +21,17 @@ public class Empleados {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column(name="nombre")
     private String nombre;
-
+    @Column (name ="apellido")
     private String apellido;
-
+    @Column (name = "dni")
+    private Number dni;
+    @Column ( name="sector")
     private String sector;
-
+    @Column (name="puesto")
     private String puesto;
-
+    @Column (name="turno")
     private String turno;
     public void setIdEmpleado(int idEmpleado) {
     this.id = (long) idEmpleado;
