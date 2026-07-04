@@ -55,4 +55,9 @@ public class AsistenciaDiaria {
     @ManyToOne
     @JoinColumn(name = "empleado_id", referencedColumnName = "id")
     private Empleados empleado;
+
+    public void save(AsistenciaDiaria asistencia) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'save'");
+    }
 }

@@ -2,13 +2,11 @@ package com.rrhh.dashboard.Productividad.Entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
 
-import io.micrometer.common.lang.NonNull;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -48,4 +46,5 @@ public class ProductividadDiaria {
     @ManyToOne
     @JoinColumn(name = "empleado_id" )  // Edl referencedColumnName no es necesario si la PK se llama "id"
     private Empleados empleado;
+
 }

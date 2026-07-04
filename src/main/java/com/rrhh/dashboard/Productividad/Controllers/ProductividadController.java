@@ -37,7 +37,9 @@ public class ProductividadController {
             emp.setSector(e.getSector());
             emp.setPuesto(e.getPuesto());
             emp.setTurno(e.getTurno());
-            emp.setDni(e.getDni());
+            if (e.getDni() != null) {
+                emp.setDni(e.getDni().longValue());
+            }
             dto.setEmpleado(emp);
         }
 
