@@ -20,4 +20,6 @@ public interface EmpleadoRepository extends JpaRepository<Empleados, Long> {
 
      Optional<Empleados> findByNombreAndApellido(String nombre, String apellido);
 
+     Optional<Empleados> findByEmailIgnoreCase(String email);
+
 }

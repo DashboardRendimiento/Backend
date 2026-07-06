@@ -1,8 +1,11 @@
 package com.rrhh.dashboard.Empleados.Entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,6 +36,16 @@ public class Empleados {
     private String puesto;
     @Column (name="turno")
     private String turno;
+    @Column(name = "email", unique = true)
+    private String email;
+    @JsonIgnore
+    @Column(name = "password_hash")
+    private String passwordHash;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private EmployeeRole role = EmployeeRole.EMPLEADO;
+    @Column(name = "active")
+    private boolean active = true;
     public void setIdEmpleado(int idEmpleado) {
     this.id = (long) idEmpleado;
     }
