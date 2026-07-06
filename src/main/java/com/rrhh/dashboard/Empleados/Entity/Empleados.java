@@ -1,7 +1,7 @@
 package com.rrhh.dashboard.Empleados.Entity;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -38,7 +38,7 @@ public class Empleados {
     private String turno;
     @Column(name = "email", unique = true)
     private String email;
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "password_hash")
     private String passwordHash;
     @Enumerated(EnumType.STRING)

@@ -2,6 +2,7 @@ package com.rrhh.dashboard.Empleados.services;
 
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
 import com.rrhh.dashboard.Empleados.Repository.EmpleadoRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +13,11 @@ import java.util.Optional;
 public class EmpleadoService {
 
     private final EmpleadoRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-    public EmpleadoService(EmpleadoRepository repository) {
+    public EmpleadoService(EmpleadoRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<Empleados> listar() {
@@ -23,6 +26,7 @@ public class EmpleadoService {
 
     @Transactional
     public Empleados guardar(Empleados empleado) {
+        hashPasswordIfPresent(empleado);
         return repository.save(empleado);
     }
 
@@ -69,5 +73,18 @@ public class EmpleadoService {
 
     public Long totalEmpleados() {
         return repository.count();
+    }
+
+    /**
+     * El body de creacion trae la contrasena en texto plano en el campo
+     * passwordHash (mismo campo que la entidad persiste ya hasheado) — se
+     * reemplaza aca por su hash BCrypt antes de guardar, para que nunca
+     * quede texto plano en la base.
+     */
+    private void hashPasswordIfPresent(Empleados empleado) {
+        String rawPassword = empleado.getPasswordHash();
+        if (rawPassword != null && !rawPassword.isBlank()) {
+            empleado.setPasswordHash(passwordEncoder.encode(rawPassword));
+        }
     }
 }
