@@ -150,7 +150,7 @@ public class ProductividadController {
     }
 
 
-
+    //PRODUCTIVIDAD POR TOKEN DE EMPLEADO
     @GetMapping("/empleado")
     @PreAuthorize("hasRole('EMPLEADO')")
     public ResponseEntity<List<ProductividadResponseDto>> miProductividad(){
@@ -165,7 +165,7 @@ public class ProductividadController {
     }
 
 
-
+    
     @GetMapping("/empleado/nombre/{nombre}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     public ResponseEntity<List<ProductividadResponseDto>> porNombre(
