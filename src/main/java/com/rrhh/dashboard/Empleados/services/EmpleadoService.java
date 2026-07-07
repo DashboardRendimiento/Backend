@@ -50,6 +50,18 @@ public class EmpleadoService {
         return repository.countByPuesto(puesto);
     }
 
+    public List<Empleados> buscarPorDni(Long dni) {
+        return repository.findByDni(dni);
+    }
+
+    public List<Empleados> buscarPorNombre(String nombre) {
+        return repository.findByNombreContainingIgnoreCase(nombre);
+    }
+
+    public List<Empleados> buscarPorApellido(String apellido) {
+        return repository.findByApellidoContainingIgnoreCase(apellido);
+    }
+
     @Transactional
     public Empleados actualizar(Long id, Empleados empleadoActualizado) {
         return repository.findById(id)

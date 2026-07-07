@@ -12,6 +12,7 @@ import com.rrhh.dashboard.Productividad.Service.ProductividadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -72,6 +73,7 @@ public class ProductividadController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN')")
     public ResponseEntity<ProductividadResponseDto> guardar(
             @RequestBody ProductividadDiariaDTO dto) {
 
@@ -81,6 +83,7 @@ public class ProductividadController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR')")
     public ResponseEntity<List<ProductividadResponseDto>> obtenerTodos() {
 
         List<ProductividadResponseDto> lista = service.obtenerTodos()
@@ -92,6 +95,7 @@ public class ProductividadController {
     }
 
     @GetMapping("/empleado/{empleadoId}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR')")
     public ResponseEntity<List<ProductividadResponseDto>> porEmpleado(
             @PathVariable Long empleadoId) {
 
@@ -104,6 +108,7 @@ public class ProductividadController {
     }
 
 @GetMapping("/empleado/nombre/{nombre}")
+@PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR')")
 public ResponseEntity<List<ProductividadResponseDto>> porNombre(
         @PathVariable String nombre) {
 
@@ -115,6 +120,7 @@ public ResponseEntity<List<ProductividadResponseDto>> porNombre(
     return ResponseEntity.ok(lista);
 }
     @GetMapping("/fecha")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR')")
     public ResponseEntity<List<ProductividadResponseDto>> porFecha(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
 
@@ -130,6 +136,7 @@ public ResponseEntity<List<ProductividadResponseDto>> porNombre(
     // KPI PEDIDOS POR USUARIO
     // =========================
     @GetMapping("/empleado/{empleadoId}/kpi")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR')")
     public ResponseEntity<ProductividadKPIDTO> obtenerKPI(@PathVariable Long empleadoId) {
 
         return ResponseEntity.ok(service.obtenerKPI(empleadoId));
@@ -138,6 +145,7 @@ public ResponseEntity<List<ProductividadResponseDto>> porNombre(
     //KPI PEDIDOS GLOBAL
     //===================
     @GetMapping("/kpi/global")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR')")
     public ResponseEntity<List<ProductividadEmpleadoKPI>> obtenerKPIGlobal() {
         return ResponseEntity.ok(service.obtenerKPIGlobal());
     }

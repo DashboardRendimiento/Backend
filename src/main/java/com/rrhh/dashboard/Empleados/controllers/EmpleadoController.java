@@ -5,6 +5,7 @@ import com.rrhh.dashboard.Empleados.services.EmpleadoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class EmpleadoController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('SUPERADMIN')")
     public ResponseEntity<Empleados> crear(@RequestBody Empleados empleado) {
         Empleados nuevoEmpleado = service.guardar(empleado);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoEmpleado);
@@ -92,6 +94,33 @@ public class EmpleadoController {
     public ResponseEntity<Map<String, Long>> totalEmpleados() {
         Long total = service.totalEmpleados();
         return ResponseEntity.ok(Map.of("total", total));
+    }
+
+    @GetMapping("/buscar/dni/{dni}")
+    public ResponseEntity<List<Empleados>> buscarPorDni(@PathVariable Long dni) {
+        List<Empleados> empleados = service.buscarPorDni(dni);
+        if (empleados.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(empleados);
+    }
+
+    @GetMapping("/buscar/nombre/{nombre}")
+    public ResponseEntity<List<Empleados>> buscarPorNombre(@PathVariable String nombre) {
+        List<Empleados> empleados = service.buscarPorNombre(nombre);
+        if (empleados.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(empleados);
+    }
+
+    @GetMapping("/buscar/apellido/{apellido}")
+    public ResponseEntity<List<Empleados>> buscarPorApellido(@PathVariable String apellido) {
+        List<Empleados> empleados = service.buscarPorApellido(apellido);
+        if (empleados.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(empleados);
     }
 
 }
