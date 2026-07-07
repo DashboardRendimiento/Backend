@@ -44,18 +44,6 @@ public registro_productividad guardar(registro_productividad productividad) {
         productividad.getAsistencia().getId() == null) {
         throw new RuntimeException("Debe enviarse el id de asistencia para registrar productividad");
     }
-    
-    if (productividad.getPedidosEncargados() != null &&
-        productividad.getPedidosPreparados() != null) {
-        
-        productividad.setPedidosPendientes(
-            productividad.getPedidosEncargados() - 
-            productividad.getPedidosPreparados()
-        );
-    } else {
-        productividad.setPedidosPendientes(0);
-    }
-    
     return repository.save(productividad);
 }
     // ==========================
