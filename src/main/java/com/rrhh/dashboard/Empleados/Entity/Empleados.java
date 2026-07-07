@@ -29,7 +29,7 @@ public class Empleados {
     @Column (name ="apellido")
     private String apellido;
     @Column (name = "dni")
-    private Number dni;
+    private Long dni;
     @Column ( name="sector")
     private String sector;
     @Column (name="puesto")

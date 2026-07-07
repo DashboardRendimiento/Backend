@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
+import com.rrhh.dashboard.Empleados.Entity.EmployeeRole;
 
 @Repository
 public interface EmpleadoRepository extends JpaRepository<Empleados, Long> {
@@ -21,5 +22,13 @@ public interface EmpleadoRepository extends JpaRepository<Empleados, Long> {
      Optional<Empleados> findByNombreAndApellido(String nombre, String apellido);
 
      Optional<Empleados> findByEmailIgnoreCase(String email);
+
+     boolean existsByRole(EmployeeRole role);
+
+     List<Empleados> findByDni(Long dni);
+
+     List<Empleados> findByNombreContainingIgnoreCase(String nombre);
+
+     List<Empleados> findByApellidoContainingIgnoreCase(String apellido);
 
 }

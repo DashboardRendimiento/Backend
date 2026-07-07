@@ -56,4 +56,9 @@ public class AttendanceService {
     public List<AttendanceRecord> listByEmployee(Long employeeId) {
         return repository.findAllByEmployeeId(employeeId);
     }
+
+    @Transactional(readOnly = true)
+    public List<AttendanceRecord> listAll() {
+        return repository.findAll();
+    }
 }

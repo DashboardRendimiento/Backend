@@ -20,4 +20,7 @@ public class ProductividadKPIDTO {
     private Double promedioPedidosPorJornada;
 
     private Double promedioBultosPorJornada;
+    private Double objetivoPedidos;
+    private Double pedidosPendientesObjetivo;
+    private Double porcentajeCumplimiento;
 }
