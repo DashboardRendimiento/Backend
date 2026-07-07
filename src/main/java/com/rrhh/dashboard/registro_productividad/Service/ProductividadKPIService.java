@@ -66,12 +66,6 @@ public class ProductividadKPIService {
                             registro_productividad::getBultosPreparados
                         )
                         .sum();
-        int totalPendientes =
-                data.stream()
-                        .mapToInt(
-                            registro_productividad::getPedidosPendientes
-                        )
-                        .sum();
 
         kpi.setTotalPedidos(totalPedidos);
 
