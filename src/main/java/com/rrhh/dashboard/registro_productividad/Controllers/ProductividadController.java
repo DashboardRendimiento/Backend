@@ -53,7 +53,7 @@ public class ProductividadController {
 
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     public ResponseEntity<?> obtenerTodos(){
 
         return ResponseEntity.ok(
@@ -64,6 +64,7 @@ public class ProductividadController {
 
 
     @GetMapping("/empleado/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     public ResponseEntity<?> empleado(
             @PathVariable Long id){
 
@@ -75,6 +76,7 @@ public class ProductividadController {
 
 
     @GetMapping("/mi-productividad")
+
     @PreAuthorize("hasRole('EMPLEADO')")
     public ResponseEntity<?> miProductividad(){
 
@@ -86,6 +88,8 @@ public class ProductividadController {
 
 
     @GetMapping("/fecha")
+        @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+
     public ResponseEntity<?> fecha(
             @RequestParam LocalDate fecha){
 

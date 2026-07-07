@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrhh.dashboard.registro_productividad.Dtos.PromedioProductividadDTO;
@@ -22,6 +23,7 @@ public class ProductivadPromediosController {
      * Promedio por jornada del usuario autenticado.
      */
     @GetMapping("/me/jornada")
+        @PreAuthorize("hasRole('EMPLEADO')")
     public ResponseEntity<PromedioProductividadDTO> obtenerMiPromedioPorJornada(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -40,6 +42,7 @@ public class ProductivadPromediosController {
      * Promedio por hora del usuario autenticado.
      */
     @GetMapping("/me/hora")
+        @PreAuthorize("hasRole('EMPLEADO')")
     public ResponseEntity<PromedioProductividadDTO> obtenerMiPromedioPorHora(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -58,6 +61,8 @@ public class ProductivadPromediosController {
      * Promedio por jornada de un empleado específico.
      */
     @GetMapping("/{empleadoId}/jornada")
+        @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+
     public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorJornada(
             @PathVariable Long empleadoId,
 
@@ -82,6 +87,8 @@ public class ProductivadPromediosController {
      * Promedio por hora de un empleado específico.
      */
     @GetMapping("/{empleadoId}/hora")
+        @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+
     public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorHora(
             @PathVariable Long empleadoId,
 
