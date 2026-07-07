@@ -3,10 +3,11 @@ package com.rrhh.dashboard.Migracion.service;
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
 import com.rrhh.dashboard.Empleados.Repository.EmpleadoRepository;
 import com.rrhh.dashboard.Migracion.Dtos.ExcelRowDTO;
-import com.rrhh.dashboard.Productividad.Entity.AsistenciaDiaria;
-import com.rrhh.dashboard.Productividad.Entity.ProductividadDiaria;
-import com.rrhh.dashboard.Productividad.repository.AsistenciaRepo;
-import com.rrhh.dashboard.Productividad.repository.ProductividadRepository;
+import com.rrhh.dashboard.registro_productividad.Entity.AsistenciaDiaria;
+import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
+import com.rrhh.dashboard.registro_productividad.repository.AsistenciaRepo;
+import com.rrhh.dashboard.registro_productividad.repository.ProductividadRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,7 +95,7 @@ public class ExcelProcessingService {
             empleado = getOrCreateGenericEmpleado();
         }
         
-        ProductividadDiaria productividad = new ProductividadDiaria();
+        registro_productividad productividad = new registro_productividad();
         productividad.setEmpleado(empleado);
         productividad.setFecha(row.getFecha() != null ? row.getFecha() : LocalDate.now());
         productividad.setBultosPreparados(row.getBultosPreparados());

@@ -1,4 +1,4 @@
-package com.rrhh.dashboard.Productividad.Entity;
+package com.rrhh.dashboard.registro_productividad.Entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

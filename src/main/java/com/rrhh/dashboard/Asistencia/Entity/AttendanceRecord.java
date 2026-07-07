@@ -39,7 +39,7 @@ public class AttendanceRecord {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    protected AttendanceRecord() {
+    public AttendanceRecord() {
         // JPA
     }
 
@@ -97,5 +97,10 @@ public class AttendanceRecord {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public static Object builder() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'builder'");
     }
 }

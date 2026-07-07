@@ -27,7 +27,9 @@ public class EmpleadoService {
     @Transactional
     public Empleados guardar(Empleados empleado) {
         hashPasswordIfPresent(empleado);
+        
         return repository.save(empleado);
+
     }
 
     public Optional<Empleados> buscarPorId(Long id) {

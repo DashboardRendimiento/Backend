@@ -12,4 +12,5 @@ public class EmpleadoDTO {
     private String sector;
     private String puesto;
     private String turno;
+    private String password;  
 }
