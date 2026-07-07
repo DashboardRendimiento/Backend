@@ -38,9 +38,7 @@ public class registro_productividad {
 
     @Column(name = "pedidos_encargados")
     private Integer pedidosEncargados;
-    
-    @Column(name = "pedidos_pendientes")
-    private Integer pedidosPendientes;
+
     
     @CreationTimestamp
     private LocalDateTime fechaCarga;
