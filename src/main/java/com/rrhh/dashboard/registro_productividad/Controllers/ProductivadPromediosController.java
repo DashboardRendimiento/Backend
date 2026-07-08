@@ -29,9 +29,15 @@ public class ProductivadPromediosController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate inicio,
 
-            @RequestParam
+                @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate fin) {
+
+
+        if (fin == null) {
+            fin = LocalDate.now();
+        }
+ 
 
         return ResponseEntity.ok(
                 productividadPromedios.obtenerMiPromedioPorJornada(inicio, fin)
@@ -42,15 +48,20 @@ public class ProductivadPromediosController {
      * Promedio por hora del usuario autenticado.
      */
     @GetMapping("/me/hora")
-        @PreAuthorize("hasRole('EMPLEADO')")
-    public ResponseEntity<PromedioProductividadDTO> obtenerMiPromedioPorHora(
+    @PreAuthorize("hasRole('EMPLEADO')")
+    public ResponseEntity<?> obtenerMiPromedioPorHora(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate inicio,
 
-            @RequestParam
+            @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate fin) {
+
+
+        if (fin == null) {
+            fin = LocalDate.now();
+        }
 
         return ResponseEntity.ok(
                 productividadPromedios.obtenerMiPromedioPorHora(inicio, fin)
