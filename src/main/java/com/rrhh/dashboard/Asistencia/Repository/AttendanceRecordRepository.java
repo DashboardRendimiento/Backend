@@ -1,6 +1,7 @@
 package com.rrhh.dashboard.Asistencia.Repository;
 
 import com.rrhh.dashboard.Asistencia.Entity.AttendanceRecord;
+import com.rrhh.dashboard.Asistencia.Entity.EstadoVerificacionFacial;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
     boolean existsByEmployeeIdAndClockOutAtIsNull(Long employeeId);
 
     List<AttendanceRecord> findAllByEmployeeId(Long employeeId);
+
+    List<AttendanceRecord> findByEstadoVerificacion(EstadoVerificacionFacial estadoVerificacion);
 }

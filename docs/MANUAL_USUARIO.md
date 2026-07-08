@@ -7,6 +7,10 @@ cada funcionalidad.
 > No hay frontend todavía: todo se usa contra la API REST (por ejemplo con `curl`, Postman o
 > Insomnia). Los ejemplos de este manual usan `curl`.
 
+> La verificación facial del fichaje de Entrada (sección 4.1) depende de un microservicio aparte
+> (`face-recognition-service/`, Python) — sin levantarlo, todas las entradas quedan
+> `PENDIENTE_REVISION` (nunca bloquea el fichaje). Ver su `README.md` para instalarlo y correrlo.
+
 ## 1. Roles del sistema
 
 | Rol | Qué puede hacer |
@@ -56,26 +60,25 @@ desarrollo:
 
 ### Dar de alta un empleado (solo SUPERADMIN)
 
+El alta es `multipart/form-data` (no JSON): una parte `empleado` con los datos (en JSON) y una
+parte `foto` opcional — la foto de referencia para la verificación facial del fichaje de Entrada
+(sección 4). Si no se enrola una foto acá, ese empleado no tiene manera de fichar con
+verificación automática; sus entradas van a quedar siempre pendientes de revisión humana.
+
 ```bash
 curl -X POST http://localhost:8080/api/empleados \
-  -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token-de-superadmin>" \
-  -d '{
-    "nombre": "Juan",
-    "apellido": "Lopez",
-    "dni": 30111222,
-    "sector": "Deposito",
-    "puesto": "Operario",
-    "email": "juan@example.com",
-    "passwordHash": "claveTemporal123",
-    "role": "EMPLEADO"
-  }'
+  -F 'empleado={"nombre":"Juan","apellido":"Lopez","dni":30111222,"sector":"Deposito","puesto":"Operario","email":"juan@example.com","passwordHash":"claveTemporal123","role":"EMPLEADO"};type=application/json' \
+  -F "foto=@juan.jpg"
 ```
 
 El campo `passwordHash` recibe la contraseña **en texto plano** — el sistema la encripta
 automáticamente antes de guardarla; nunca queda ni se devuelve en texto plano por la API.
 
 Si no se especifica `role`, el empleado queda como `EMPLEADO` por defecto.
+
+La foto de referencia se puede consultar (no viaja en el JSON del empleado) con
+`GET /api/empleados/{id}/foto` (ADMINISTRADOR/SUPERADMIN/SUPERVISOR).
 
 ### Buscar empleados
 
@@ -101,11 +104,12 @@ Cada empleado ficha su propia entrada y salida — la hora la pone el servidor, 
 así que no se puede "cargar" una hora distinta a la real.
 
 ```bash
-# Entrada
+# Entrada (multipart, foto opcional pero recomendada — ver mas abajo)
 curl -X POST http://localhost:8080/api/attendance/2/clock-in \
-  -H "Authorization: Bearer <token-del-empleado-id-2>"
+  -H "Authorization: Bearer <token-del-empleado-id-2>" \
+  -F "foto=@captura.jpg"
 
-# Salida
+# Salida (sin foto, sin cambios)
 curl -X POST http://localhost:8080/api/attendance/2/clock-out \
   -H "Authorization: Bearer <token-del-empleado-id-2>"
 ```
@@ -114,6 +118,44 @@ Reglas:
 - No se puede fichar una segunda entrada sin haber fichado la salida anterior (409).
 - No se puede fichar en nombre de otro empleado — el `{employeeId}` de la URL tiene que ser el
   mismo que el del token (403 si no coincide).
+
+### 4.1. Verificación facial en la Entrada
+
+Al fichar Entrada con una foto (parte `foto`), el sistema la compara contra la foto de referencia
+del empleado (cargada al darlo de alta, sección 3) usando un microservicio propio
+(`face-recognition-service/`, ver su `README.md` para levantarlo). **La entrada se registra
+siempre**, tenga o no foto, coincida o no la cara — lo único que cambia es el
+`estadoVerificacion` del fichaje:
+
+| Estado | Cuándo pasa |
+|---|---|
+| `VERIFICADO_AUTOMATICO` | Se detectó el rostro en ambas fotos y la similitud alcanzó el umbral (`app.reconocimiento-facial.umbral-auto`, 0.75 por defecto). |
+| `PENDIENTE_REVISION` | Similitud insuficiente, no se detectó el rostro en alguna foto, el empleado no tiene foto de referencia, o el microservicio no respondió. |
+| `VERIFICADO_MANUAL` / `RECHAZADO` | Un humano ya revisó un fichaje que estaba `PENDIENTE_REVISION` (ver más abajo). |
+
+Si no se manda `foto` en el clock-in, el fichaje queda sin `estadoVerificacion` (no aplica).
+
+### 4.2. Revisar fichajes pendientes (ADMINISTRADOR/SUPERADMIN/SUPERVISOR)
+
+```bash
+# Listar los pendientes
+curl http://localhost:8080/api/attendance/pendientes -H "Authorization: Bearer <token-admin>"
+
+# Ver la foto capturada en un fichaje puntual
+curl http://localhost:8080/api/attendance/7/foto -H "Authorization: Bearer <token-admin>" -o foto7.jpg
+
+# Aprobar o rechazar (compara foto7.jpg contra la de referencia del empleado, a simple vista)
+curl -X POST http://localhost:8080/api/attendance/7/revisar \
+  -H "Content-Type: application/json" -H "Authorization: Bearer <token-admin>" \
+  -d '{"aprobado": true}'
+```
+
+Rechazar **no borra** el fichaje — queda marcado `RECHAZADO`, para no perder el registro de
+auditoría (la entrada existió a esa hora; un humano determinó después que la foto no
+correspondía). Solo se puede revisar un fichaje que esté `PENDIENTE_REVISION` (409 si no).
+
+Ver también: `GET /api/attendance`, `GET /api/attendance/empleado/{employeeId}` — listados
+generales, ya existentes.
 
 Ver todos los fichajes o los de un empleado puntual (ADMINISTRADOR/SUPERADMIN/SUPERVISOR):
 
@@ -256,9 +298,12 @@ curl -X POST http://localhost:8080/api/excel/import \
 | GET | /api/empleados/sector/{sector}, /puesto/{puesto} | Abierto |
 | GET | /api/empleados/contar/sector/{sector}, /contar/puesto/{puesto}, /total | Abierto |
 | GET | /api/empleados/buscar/dni/{dni}, /buscar/nombre/{nombre}, /buscar/apellido/{apellido} | Abierto |
+| GET | /api/empleados/{id}/foto | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
 | POST | /api/attendance/{employeeId}/clock-in, /clock-out | EMPLEADO, ADMINISTRADOR, SUPERADMIN, SUPERVISOR (solo el propio id) |
 | GET | /api/attendance | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
 | GET | /api/attendance/empleado/{employeeId} | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
+| GET | /api/attendance/pendientes, /{id}/foto | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
+| POST | /api/attendance/{id}/revisar | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
 | POST/PUT/DELETE | /api/work-schedules... | ADMINISTRADOR, SUPERADMIN |
 | GET | /api/work-schedules... | ADMINISTRADOR, SUPERADMIN |
 | POST | /api/productividad | ADMINISTRADOR, SUPERADMIN |

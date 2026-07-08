@@ -26,7 +26,19 @@ public class EmpleadoService {
 
     @Transactional
     public Empleados guardar(Empleados empleado) {
+        return guardar(empleado, null);
+    }
+
+    /**
+     * fotoReferencia es la foto de enrolamiento para verificacion facial
+     * (modulo Asistencia) — se carga en el alta del empleado, no despues.
+     */
+    @Transactional
+    public Empleados guardar(Empleados empleado, byte[] fotoReferencia) {
         hashPasswordIfPresent(empleado);
+        if (fotoReferencia != null && fotoReferencia.length > 0) {
+            empleado.setFotoReferencia(fotoReferencia);
+        }
         return repository.save(empleado);
     }
 

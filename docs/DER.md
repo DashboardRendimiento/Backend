@@ -18,6 +18,7 @@ erDiagram
         String passwordHash "hasheado, nunca se expone por la API"
         EmployeeRole role "EMPLEADO, ADMINISTRADOR, SUPERADMIN, SUPERVISOR"
         boolean active
+        bytes fotoReferencia "foto de enrolamiento, verificacion facial; nunca en JSON"
     }
 
     ATTENDANCE_RECORDS {
@@ -27,6 +28,9 @@ erDiagram
         Instant clockOutAt
         Instant createdAt
         Instant updatedAt
+        bytes fotoCapturada "solo en clock-in; servida aparte, no en el JSON"
+        Double similitudFacial "0..1, null si no hubo foto"
+        EstadoVerificacionFacial estadoVerificacion "VERIFICADO_AUTOMATICO, PENDIENTE_REVISION, VERIFICADO_MANUAL, RECHAZADO"
     }
 
     WORK_SCHEDULES {
@@ -114,6 +118,14 @@ agregado para validar el dato. La contrapartida es que la integridad referencial
 En cambio, `PRODUCTIVIDAD_DIARIA` y `ASISTENCIA_DIARIA` — ambas preexistentes al login/roles,
 parte del flujo de migración desde Excel — sí tienen una relación JPA real (`@ManyToOne` con
 `@JoinColumn(empleado_id)`), con la restricción `FOREIGN KEY` correspondiente en la base.
+
+## Verificación facial (Empleados ⇄ AttendanceRecord)
+
+`Empleados.fotoReferencia` (cargada al dar de alta) y `AttendanceRecord.fotoCapturada` (tomada en
+cada clock-in) son las dos fotos que se comparan. La comparación en sí **no vive en esta base de
+datos**: la hace un microservicio Python aparte (`face-recognition-service/`), al que el backend
+le manda ambas fotos y recibe de vuelta una similitud — solo el resultado (`similitudFacial`,
+`estadoVerificacion`) queda persistido acá.
 
 ## Cardinalidades
 

@@ -30,3 +30,8 @@ build/
 ### VS Code ###
 .vscode/
 .env
+
+### Python (face-recognition-service) ###
+face-recognition-service/venv/
+face-recognition-service/__pycache__/
+**/__pycache__/
