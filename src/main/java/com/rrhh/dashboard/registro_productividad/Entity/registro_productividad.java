@@ -36,15 +36,10 @@ public class registro_productividad {
     @Column(name = "pedidos_preparados")
     private Integer pedidosPreparados;
 
-    @Column(name = "pedidos_encargados")
-    private Integer pedidosEncargados;
 
-    
-    @CreationTimestamp
-    private LocalDateTime fechaCarga;
-
-    @Column(nullable = false, updatable = false)
+    @Column(name="fechaHora")
     private LocalDateTime fechaHora;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attendance_id", nullable = false)
     private AttendanceRecord asistencia;

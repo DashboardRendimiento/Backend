@@ -32,7 +32,6 @@ public class EmpleadoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('SUPERADMIN')")
     public ResponseEntity<Empleados> crear(@RequestBody Empleados empleado) {
         Empleados nuevoEmpleado = service.guardar(empleado);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoEmpleado);

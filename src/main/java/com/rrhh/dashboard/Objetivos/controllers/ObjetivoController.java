@@ -34,7 +34,6 @@ public class ObjetivoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN')")
     public ResponseEntity<ObjetivoResponse> crear(@Valid @RequestBody CrearObjetivoRequest request) {
         Objetivo objetivo = service.crear(
                 request.empleadoId(), request.tipo(), request.valorSemanal(), request.semanaInicio());

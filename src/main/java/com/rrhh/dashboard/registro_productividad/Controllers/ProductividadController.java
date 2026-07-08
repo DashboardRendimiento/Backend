@@ -32,9 +32,6 @@ public class ProductividadController {
 
 
         productividad.setFecha(dto.getFecha());
-        productividad.setPedidosEncargados(
-                dto.getPedidosEncargados()
-        );
 
         productividad.setPedidosPreparados(
                 dto.getPedidosPreparados()

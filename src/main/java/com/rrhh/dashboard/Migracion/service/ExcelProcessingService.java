@@ -100,9 +100,6 @@ public class ExcelProcessingService {
         productividad.setFecha(row.getFecha() != null ? row.getFecha() : LocalDate.now());
         productividad.setBultosPreparados(row.getBultosPreparados());
         productividad.setPedidosPreparados(row.getPedidosPreparados());
-        productividad.setPedidosEncargados(row.getPedidosEncargados());
-        productividad.setPedidosPendientes(row.getPedidosPendientes());
-        
         productividadRepository.save(productividad);
     }
 
@@ -143,10 +140,8 @@ public class ExcelProcessingService {
 
     private boolean hasProductividadData(ExcelRowDTO row) {
         return row.getBultosPreparados() != null || 
-               row.getPedidosPreparados() != null ||
-               row.getPedidosEncargados() != null ||
-               row.getPedidosPendientes() != null;
-    }
+               row.getPedidosPreparados() != null ;
+        }
 
     private boolean hasAsistenciaData(ExcelRowDTO row) {
         return row.getEstado() != null ||
