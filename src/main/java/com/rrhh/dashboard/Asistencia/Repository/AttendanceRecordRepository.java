@@ -4,6 +4,7 @@ import com.rrhh.dashboard.Asistencia.Entity.AttendanceRecord;
 import com.rrhh.dashboard.Asistencia.Entity.EstadoVerificacionFacial;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,4 +17,6 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
     List<AttendanceRecord> findAllByEmployeeId(Long employeeId);
 
     List<AttendanceRecord> findByEstadoVerificacion(EstadoVerificacionFacial estadoVerificacion);
+    Optional<AttendanceRecord> findById(Long id);
+    List<AttendanceRecord> findByEmployeeIdAndClockInAtBetween(Long employeeId, Instant start, Instant end);
 }

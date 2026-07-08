@@ -1,4 +1,4 @@
-package com.rrhh.dashboard.Productividad.Dtos;
+package com.rrhh.dashboard.registro_productividad.Dtos;
 
 import java.time.LocalDate;
 

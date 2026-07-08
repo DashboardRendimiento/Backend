@@ -3,11 +3,9 @@ package com.rrhh.dashboard.Objetivos.services;
 import com.rrhh.dashboard.Objetivos.Entity.Objetivo;
 import com.rrhh.dashboard.Objetivos.Entity.TipoObjetivo;
 import com.rrhh.dashboard.Objetivos.Repository.ObjetivoRepository;
-import com.rrhh.dashboard.Objetivos.dtos.ObjetivoProgresoResponse;
 import com.rrhh.dashboard.Objetivos.exceptions.DuplicateObjetivoException;
 import com.rrhh.dashboard.Objetivos.exceptions.InvalidObjetivoException;
 import com.rrhh.dashboard.Objetivos.exceptions.ObjetivoNotFoundException;
-import com.rrhh.dashboard.Productividad.Service.RegistroHorarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,16 +27,13 @@ class ObjetivoServiceTest {
     @Mock
     private ObjetivoRepository repository;
 
-    @Mock
-    private RegistroHorarioService registroHorarioService;
-
     private ObjetivoService service;
 
     private static final LocalDate LUNES = LocalDate.of(2026, 7, 6);
 
     @BeforeEach
     void setUp() {
-        service = new ObjetivoService(repository, registroHorarioService);
+        service = new ObjetivoService(repository);
     }
 
     @Test
@@ -93,29 +88,4 @@ class ObjetivoServiceTest {
         assertThatThrownBy(() -> service.eliminar(1L)).isInstanceOf(ObjetivoNotFoundException.class);
     }
 
-    @Test
-    void calcularProgresoParaPedidosCruzaConProductividadCargada() {
-        Objetivo objetivo = new Objetivo(1L, TipoObjetivo.PEDIDOS, 120.0, LUNES);
-        when(repository.findById(1L)).thenReturn(Optional.of(objetivo));
-        when(registroHorarioService.totalPedidosDelDia(eq(1L), any(LocalDate.class))).thenReturn(5);
-
-        ObjetivoProgresoResponse progreso = service.calcularProgreso(1L);
-
-        assertThat(progreso.cargadoHoy()).isEqualTo(5.0);
-        assertThat(progreso.pendienteHoy()).isEqualTo(15.0);
-        assertThat(progreso.cargadoSemana()).isGreaterThan(0);
-    }
-
-    @Test
-    void calcularProgresoParaDineroNoTieneCruceAutomatico() {
-        Objetivo objetivo = new Objetivo(1L, TipoObjetivo.DINERO, 50000.0, LUNES);
-        when(repository.findById(1L)).thenReturn(Optional.of(objetivo));
-
-        ObjetivoProgresoResponse progreso = service.calcularProgreso(1L);
-
-        assertThat(progreso.cargadoHoy()).isNull();
-        assertThat(progreso.pendienteHoy()).isNull();
-        assertThat(progreso.cargadoSemana()).isNull();
-        assertThat(progreso.pendienteSemana()).isNull();
-    }
 }

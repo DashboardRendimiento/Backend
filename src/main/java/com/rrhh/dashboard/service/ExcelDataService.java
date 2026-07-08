@@ -3,7 +3,7 @@ package com.rrhh.dashboard.service;
 import com.rrhh.dashboard.Empleados.dtos.EmpleadoDTO;
 import com.rrhh.dashboard.Migracion.Dtos.AsistenciaDiariaDTO;
 import com.rrhh.dashboard.Migracion.Dtos.ResumenKpiDTO;
-import com.rrhh.dashboard.Productividad.Dtos.ProductividadDiariaDTO;
+import com.rrhh.dashboard.registro_productividad.Dtos.ProductividadDiariaDTO;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;

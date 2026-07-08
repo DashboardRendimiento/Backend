@@ -149,4 +149,8 @@ public class AttendanceRecord {
     public EstadoVerificacionFacial getEstadoVerificacion() {
         return estadoVerificacion;
     }
+
+    public static Object builder() {
+        throw new UnsupportedOperationException("Unimplemented method 'builder'");
+    }
 }

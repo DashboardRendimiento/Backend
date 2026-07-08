@@ -3,18 +3,14 @@ package com.rrhh.dashboard.Objetivos.services;
 import com.rrhh.dashboard.Objetivos.Entity.Objetivo;
 import com.rrhh.dashboard.Objetivos.Entity.TipoObjetivo;
 import com.rrhh.dashboard.Objetivos.Repository.ObjetivoRepository;
-import com.rrhh.dashboard.Objetivos.dtos.ObjetivoProgresoResponse;
-import com.rrhh.dashboard.Objetivos.dtos.ObjetivoResponse;
 import com.rrhh.dashboard.Objetivos.exceptions.DuplicateObjetivoException;
 import com.rrhh.dashboard.Objetivos.exceptions.ObjetivoNotFoundException;
-import com.rrhh.dashboard.Productividad.Service.RegistroHorarioService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Objetivos semanales por empleado (R-007 de Horarios es un modulo
@@ -24,11 +20,9 @@ import java.util.stream.Collectors;
 public class ObjetivoService {
 
     private final ObjetivoRepository repository;
-    private final RegistroHorarioService registroHorarioService;
 
-    public ObjetivoService(ObjetivoRepository repository, RegistroHorarioService registroHorarioService) {
+    public ObjetivoService(ObjetivoRepository repository) {
         this.repository = repository;
-        this.registroHorarioService = registroHorarioService;
     }
 
     @Transactional
@@ -64,31 +58,23 @@ public class ObjetivoService {
     public List<Objetivo> listarPorEmpleado(Long empleadoId) {
         return repository.findByEmpleadoId(empleadoId);
     }
+    public Objetivo obtenerObjetivoActual(
+            Long empleadoId,
+            TipoObjetivo tipo,
+            LocalDate fecha
+    ){
 
-    /**
-     * Cruce automatico con Productividad: solo para tipo PEDIDOS, que es el
-     * unico con una fuente de datos real hoy (RegistroHorario). Para DINERO
-     * no hay de donde sacar "cuanto lleva cargado" todavia.
-     */
-    @Transactional(readOnly = true)
-    public ObjetivoProgresoResponse calcularProgreso(Long id) {
-        Objetivo objetivo = obtener(id);
+        LocalDate inicioSemana =
+                fecha.minusDays(fecha.getDayOfWeek().getValue() - 1);
 
-        if (objetivo.getTipo() != TipoObjetivo.PEDIDOS) {
-            return new ObjetivoProgresoResponse(ObjetivoResponse.from(objetivo), null, null, null, null);
-        }
 
-        LocalDate hoy = LocalDate.now();
-        double cargadoHoy = registroHorarioService.totalPedidosDelDia(objetivo.getEmpleadoId(), hoy);
-        double pendienteHoy = Math.max(0, objetivo.getValorDiario() - cargadoHoy);
-
-        double cargadoSemana = diasDesde(objetivo.getSemanaInicio(), hoy).stream()
-                .mapToDouble(dia -> registroHorarioService.totalPedidosDelDia(objetivo.getEmpleadoId(), dia))
-                .sum();
-        double pendienteSemana = Math.max(0, objetivo.getValorSemanal() - cargadoSemana);
-
-        return new ObjetivoProgresoResponse(
-                ObjetivoResponse.from(objetivo), cargadoHoy, pendienteHoy, cargadoSemana, pendienteSemana);
+        return repository
+                .findByEmpleadoIdAndTipoAndSemanaInicio(
+                        empleadoId,
+                        tipo,
+                        inicioSemana
+                )
+                .orElse(null);
     }
 
     private LocalDate lunesDeEstaSemana() {
@@ -96,8 +82,4 @@ public class ObjetivoService {
         return hoy.minusDays(hoy.getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue());
     }
 
-    private List<LocalDate> diasDesde(LocalDate semanaInicio, LocalDate hasta) {
-        LocalDate limite = hasta.isBefore(semanaInicio) ? semanaInicio : hasta;
-        return semanaInicio.datesUntil(limite.plusDays(1)).collect(Collectors.toList());
-    }
 }

@@ -40,6 +40,7 @@ public class EmpleadoService {
             empleado.setFotoReferencia(fotoReferencia);
         }
         return repository.save(empleado);
+
     }
 
     public Optional<Empleados> buscarPorId(Long id) {

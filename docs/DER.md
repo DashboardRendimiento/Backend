@@ -43,14 +43,6 @@ erDiagram
         Instant updatedAt
     }
 
-    REGISTROS_HORARIOS {
-        Long id PK
-        Long empleadoId "sin FK de base"
-        Integer pedidosPreparados
-        Integer bultosPreparados
-        Instant registradoEn
-    }
-
     OBJETIVOS {
         Long id PK
         Long empleadoId "sin FK de base"
@@ -61,14 +53,14 @@ erDiagram
         Instant updatedAt
     }
 
-    PRODUCTIVIDAD_DIARIA {
+    REGISTRO_PRODUCTIVIDAD {
         Long id PK
         LocalDate fecha
         Integer bultosPreparados
         Integer pedidosPreparados
         Integer pedidosEncargados
-        Integer pedidosPendientes
         LocalDateTime fechaCarga
+        Long attendance_id FK "FK real (@ManyToOne), no nulo — el fichaje de Entrada abierto al momento de cargar"
         Long empleado_id FK "FK real (@ManyToOne)"
     }
 
@@ -96,10 +88,10 @@ erDiagram
 
     EMPLEADOS ||--o{ ATTENDANCE_RECORDS : "ficha"
     EMPLEADOS ||--o| WORK_SCHEDULES : "tiene asignado"
-    EMPLEADOS ||--o{ REGISTROS_HORARIOS : "carga"
     EMPLEADOS ||--o{ OBJETIVOS : "tiene como meta"
-    EMPLEADOS ||--o{ PRODUCTIVIDAD_DIARIA : "genera"
+    EMPLEADOS ||--o{ REGISTRO_PRODUCTIVIDAD : "genera"
     EMPLEADOS ||--o{ ASISTENCIA_DIARIA : "genera"
+    ATTENDANCE_RECORDS ||--o{ REGISTRO_PRODUCTIVIDAD : "respalda"
 ```
 
 `RESUMEN_KPI` queda fuera del diagrama de relaciones: es una tabla independiente (indicadores
@@ -107,17 +99,20 @@ globales cargados desde Excel), sin vínculo a `EMPLEADOS` ni a ninguna otra ent
 
 ## Notas sobre las relaciones
 
-Todas las relaciones de `EMPLEADOS` hacia los módulos nuevos (`ATTENDANCE_RECORDS`,
-`WORK_SCHEDULES`, `REGISTROS_HORARIOS`, `OBJETIVOS`) están modeladas **sin clave foránea real en
-la base** — cada una guarda solo el `Long employeeId`/`empleadoId`, sin `@ManyToOne`/`@JoinColumn`
-hacia `Empleados`. Es una decisión de diseño ya tomada en esos módulos (documentada en el propio
-código): evita acoplar el esquema de cada módulo al de Empleados y no exige una consulta a otro
-agregado para validar el dato. La contrapartida es que la integridad referencial (que ese
-`employeeId` exista de verdad) no la garantiza la base de datos, sino el código de la aplicación.
+Las relaciones de `EMPLEADOS` hacia `WORK_SCHEDULES` y `OBJETIVOS` están modeladas **sin clave
+foránea real en la base** — cada una guarda solo el `Long employeeId`/`empleadoId`, sin
+`@ManyToOne`/`@JoinColumn` hacia `Empleados`. Es una decisión de diseño ya tomada en esos módulos
+(documentada en el propio código): evita acoplar el esquema de cada módulo al de Empleados y no
+exige una consulta a otro agregado para validar el dato. La contrapartida es que la integridad
+referencial (que ese `employeeId` exista de verdad) no la garantiza la base de datos, sino el
+código de la aplicación.
 
-En cambio, `PRODUCTIVIDAD_DIARIA` y `ASISTENCIA_DIARIA` — ambas preexistentes al login/roles,
-parte del flujo de migración desde Excel — sí tienen una relación JPA real (`@ManyToOne` con
-`@JoinColumn(empleado_id)`), con la restricción `FOREIGN KEY` correspondiente en la base.
+En cambio, `REGISTRO_PRODUCTIVIDAD` y `ASISTENCIA_DIARIA` sí tienen una relación JPA real
+(`@ManyToOne` con `@JoinColumn(empleado_id)`), con la restricción `FOREIGN KEY` correspondiente en
+la base. `REGISTRO_PRODUCTIVIDAD` además tiene una segunda FK real, no nula, hacia
+`ATTENDANCE_RECORDS` (`attendance_id`): cada carga de productividad queda atada al fichaje de
+Entrada que estaba abierto en ese momento — el servicio lo resuelve solo (busca la Entrada sin
+Salida del empleado autenticado); si no hay ninguna abierta, la carga falla con 409.
 
 ## Verificación facial (Empleados ⇄ AttendanceRecord)
 
@@ -133,7 +128,7 @@ le manda ambas fotos y recibe de vuelta una similitud — solo el resultado (`si
 |---|---|---|
 | Empleados → AttendanceRecord | 1 a N | Un empleado puede tener muchos fichajes (uno por cada entrada/salida). |
 | Empleados → WorkSchedule | 1 a 0..1 | Un empleado tiene, a lo sumo, un horario vigente a la vez (`employeeId` único). |
-| Empleados → RegistroHorario | 1 a N | Un empleado carga muchos registros horarios (uno por hora, como máximo). |
 | Empleados → Objetivo | 1 a N | Un empleado puede tener varios objetivos (distintos tipos y/o semanas). |
-| Empleados → ProductividadDiaria | 1 a N | Un empleado tiene un registro de productividad por día. |
+| Empleados → RegistroProductividad | 1 a N | Un empleado carga varios registros de productividad (uno por día, típicamente). |
+| AttendanceRecord → RegistroProductividad | 1 a N | Un fichaje de Entrada puede respaldar varias cargas de productividad hechas mientras estuvo abierto. |
 | Empleados → AsistenciaDiaria | 1 a N | Un empleado tiene un resumen de asistencia por día (importado de Excel). |

@@ -65,12 +65,8 @@
                 <!--Databse confing -->
         <dependency>
             <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId> 
+            <artifactId>postgresql</artifactId>
          </dependency>
-        <dependency>    
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
 
         <!-- H2 Database -->
         <dependency>

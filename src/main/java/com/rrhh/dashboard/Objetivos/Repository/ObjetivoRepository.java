@@ -15,4 +15,9 @@ public interface ObjetivoRepository extends JpaRepository<Objetivo, Long> {
     Optional<Objetivo> findByEmpleadoIdAndSemanaInicio(Long empleadoId, LocalDate semanaInicio);
 
     boolean existsByEmpleadoIdAndTipoAndSemanaInicio(Long empleadoId, TipoObjetivo tipo, LocalDate semanaInicio);
+     Optional<Objetivo> findByEmpleadoIdAndTipoAndSemanaInicio(
+            Long empleadoId,
+            TipoObjetivo tipo,
+            LocalDate semanaInicio
+    );
 }

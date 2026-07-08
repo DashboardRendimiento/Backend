@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 import com.rrhh.dashboard.Empleados.dtos.EmpleadoDTO;
-import com.rrhh.dashboard.Productividad.Dtos.ProductividadDiariaDTO;
+import com.rrhh.dashboard.registro_productividad.Dtos.ProductividadDiariaDTO;
 
 @Data
 public class DashboardDTO {
