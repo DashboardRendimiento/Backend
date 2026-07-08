@@ -101,8 +101,7 @@ public class ExcelProcessingService {
         productividad.setBultosPreparados(row.getBultosPreparados());
         productividad.setPedidosPreparados(row.getPedidosPreparados());
         productividad.setPedidosEncargados(row.getPedidosEncargados());
-        productividad.setPedidosPendientes(row.getPedidosPendientes());
-        
+
         productividadRepository.save(productividad);
     }
 

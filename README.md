@@ -1,11 +1,18 @@
 # 🚀 Dashboard RRHH - Backend (Spring Boot)
 
-API REST para gestión de recursos humanos de depósito de distribuidora de bebidas.
+API REST para gestión de recursos humanos de depósito de distribuidora de bebidas: empleados,
+fichaje de asistencia con verificación facial, horarios, productividad y objetivos.
+
+Para el detalle de uso de cada endpoint (roles, ejemplos con `curl`), ver
+[`docs/MANUAL_USUARIO.md`](docs/MANUAL_USUARIO.md). Para el modelo de datos, ver
+[`docs/DER.md`](docs/DER.md).
 
 ## 📋 Pre-requisitos
 
-- **Java 17** o superior
+- **Java 21**
 - **Maven 3.6+** (o usar el Maven Wrapper incluido)
+- **Python 3.10+** — solo si vas a levantar `face-recognition-service/` (verificación facial del
+  fichaje de Entrada; opcional, sin él las entradas quedan `PENDIENTE_REVISION`)
 
 Verificar instalación:
 ```bash
@@ -16,207 +23,130 @@ mvn -version
 ## 🏗️ Estructura del Proyecto
 
 ```
-backend-rrhh/
+Backend/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/rrhh/dashboard/
 │   │   │   ├── DashboardApplication.java        # Clase principal
-│   │   │   ├── config/
-│   │   │   │   └── CorsConfig.java             # Configuración CORS
-│   │   │   ├── service/
-│   │   │   │   └── ExcelDataService.java       # Servicio de datos
-│   │   │   ├── controller/
-│   │   │   │   └── HealthController.java       # Health check
-│   │   │   └── util/
-│   │   │       └── DateUtils.java              # Utilidades
+│   │   │   ├── Auth/                           # Login, JWT
+│   │   │   ├── Empleados/                      # Alta, baja, búsqueda de empleados
+│   │   │   ├── Asistencia/                     # Fichaje entrada/salida + verificación facial
+│   │   │   ├── Horarios/                       # Horarios asignados por empleado
+│   │   │   ├── Objetivos/                      # Metas semanales por empleado
+│   │   │   ├── registro_productividad/         # Carga y KPIs de productividad diaria
+│   │   │   ├── Migracion/                      # Import de datos desde Excel
+│   │   │   ├── security/                       # Config de Spring Security + JWT
+│   │   │   └── service/                        # Carga inicial de datos desde Excel
 │   │   └── resources/
 │   │       ├── application.properties          # Configuración
 │   │       └── data/
-│   │           └── Dataset_RRHH_Deposito.xlsx  # Datos
+│   │           └── Dataset_RRHH_Deposito.xlsx  # Dataset de ejemplo
 │   └── test/
-├── pom.xml                                      # Dependencias Maven
+├── face-recognition-service/                    # Microservicio Python (FastAPI) aparte
+├── docs/
+│   ├── MANUAL_USUARIO.md                        # Guía de uso de la API por rol
+│   └── DER.md                                   # Diagrama de entidad-relación
+├── pom.xml
 └── README.md
 ```
 
 ## 🚀 Ejecutar la Aplicación
 
-### Opción 1: Con Maven instalado
+### Con Maven Wrapper
 ```bash
-mvn spring-boot:run
-```
-
-### Opción 2: Con Maven Wrapper (si está incluido)
-```bash
-# Linux/Mac
+# Linux/Mac/Git Bash
 ./mvnw spring-boot:run
 
 # Windows
 mvnw.cmd spring-boot:run
 ```
 
-### Opción 3: Compilar y ejecutar JAR
+### Compilar y ejecutar el JAR
 ```bash
-mvn clean package
+./mvnw clean package
 java -jar target/dashboard-1.0.0.jar
 ```
 
 El servidor estará disponible en: **http://localhost:8080**
 
+Al arrancar por primera vez (si todavía no existe ningún SUPERADMIN), el sistema crea uno con
+`superadmin@example.com` / `changeme` (configurable con `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD`
+— ver [`docs/MANUAL_USUARIO.md`](docs/MANUAL_USUARIO.md), sección 2).
+
+### Verificación facial (opcional)
+
+La verificación automática de la foto de Entrada depende del microservicio Python en
+`face-recognition-service/` — ver su propio `README.md` para instalarlo y correrlo. Sin él,
+todos los fichajes de Entrada con foto quedan `PENDIENTE_REVISION` (nunca bloquea el fichaje).
+
 ## ✅ Verificar que Funciona
 
-### 1. Health Check
 ```bash
 curl http://localhost:8080/api/health
-```
-
-Respuesta esperada:
-```json
-{
-  "status": "healthy",
-  "service": "Dashboard RRHH API",
-  "version": "1.0.0",
-  "timestamp": "2026-07-02T...",
-  "dataLoaded": true
-}
-```
-
-### 2. Información del Sistema
-```bash
 curl http://localhost:8080/api/info
 ```
 
-### 3. Navegador
-Abre en tu navegador:
-- http://localhost:8080/api/health
-- http://localhost:8080/api/info
+## 🗄️ Base de Datos
 
-## 📊 Datos Cargados
+Por defecto corre contra **H2 en memoria** (se recrea en cada arranque, `ddl-auto=update`) —
+pensado para desarrollo local, no persiste entre reinicios. La consola H2 queda disponible en
+`http://localhost:8080/h2-console` (JDBC URL `jdbc:h2:mem:Dashboard`, user `sa`, sin password).
 
-Al iniciar, la aplicación carga automáticamente estas hojas del Excel:
+Al arrancar, además, se carga automáticamente el Excel de `src/main/resources/data/` (empleados,
+productividad y asistencia de ejemplo) — ver `ExcelDataService`.
 
-- ✅ **Resumen_KPIs** (5 empleados)
-- ✅ **Empleados** (5 registros)
-- ✅ **Productividad_Diaria** (121 registros)
-- ✅ **Asistencia_Diaria** (125 registros)
-- ✅ **Seguridad** (20 registros)
-- ✅ **Capacitaciones** (25 registros)
+Para producción, `pom.xml` ya incluye el driver de PostgreSQL; falta configurar
+`spring.datasource.*` contra una instancia real en `application.properties` (o vía variables de
+entorno) y ajustar `ddl-auto`.
 
-Verás mensajes como estos en los logs:
-```
-✅ Cargada hoja: Resumen_KPIs (5 registros)
-✅ Cargada hoja: Empleados (5 registros)
-...
-✨ Datos cargados exitosamente
-```
+## 🔧 Configuración relevante
 
-## 🔧 Configuración
-
-### application.properties
+`src/main/resources/application.properties`:
 
 ```properties
-# Puerto del servidor
 server.port=8080
-
-# Ubicación del archivo Excel
-app.excel.file=classpath:data/Dataset_RRHH_Deposito.xlsx
-
-# Nivel de logs
-logging.level.com.rrhh.dashboard=DEBUG
+app.jwt.secret=${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+app.jwt.expiration-minutes=60
+app.superadmin.email=${SUPERADMIN_EMAIL:superadmin@example.com}
+app.superadmin.password=${SUPERADMIN_PASSWORD:changeme}
+app.reconocimiento-facial.url=${FACE_SERVICE_URL:http://localhost:8000}
+app.reconocimiento-facial.umbral-auto=${FACE_MATCH_THRESHOLD:0.75}
 ```
 
-### Cambiar Puerto
-Si el puerto 8080 está ocupado:
-```properties
-server.port=8081
-```
+**Cambiar `JWT_SECRET` y las credenciales del SuperAdmin en cualquier ambiente que no sea
+desarrollo local.**
 
 ## 🧪 Testing
 
 ```bash
-# Ejecutar todos los tests
-mvn test
-
-# Ejecutar con cobertura
-mvn test jacoco:report
+./mvnw test
 ```
 
-## 🐛 Troubleshooting
+## 📡 Endpoints principales
 
-### Error: "Port 8080 is already in use"
-```properties
-# Cambiar en application.properties:
-server.port=8081
-```
+Ver el catálogo completo (roles incluidos) en
+[`docs/MANUAL_USUARIO.md`](docs/MANUAL_USUARIO.md#9-catálogo-completo-de-endpoints). Resumen:
 
-### Error: "Cannot find Excel file"
-Verificar que el archivo esté en:
-```
-src/main/resources/data/Dataset_RRHH_Deposito.xlsx
-```
-
-### Error: "Java version must be 17 or higher"
-```bash
-# Descargar Java 17:
-# https://adoptium.net/
-```
-
-### Maven no descarga dependencias
-```bash
-mvn clean install -U
-```
-
-## 📡 Endpoints Disponibles
-
-### Health Check
-```
-GET /api/health
-```
-
-### Información del Sistema
-```
-GET /api/info
-```
-
-### Raíz de la API
-```
-GET /api
-```
-
-## 🔄 Hot Reload (Desarrollo)
-
-Spring Boot DevTools está incluido, por lo que los cambios en el código se recargan automáticamente.
-
-## 📦 Compilar para Producción
-
-```bash
-# Compilar sin tests
-mvn clean package -DskipTests
-
-# El JAR estará en:
-target/dashboard-1.0.0.jar
-
-# Ejecutar en producción:
-java -jar target/dashboard-1.0.0.jar
-```
+| Módulo | Base | 
+|---|---|
+| Auth | `POST /api/auth/login` |
+| Empleados | `/api/empleados` |
+| Asistencia | `/api/attendance` |
+| Horarios | `/api/work-schedules` |
+| Productividad | `/api/productividad` |
+| Objetivos | `/api/objetivos` |
+| Migración desde Excel | `POST /api/excel/import` |
 
 ## 🌐 CORS
 
-CORS está configurado para permitir requests desde:
-- http://localhost:3000
-- http://localhost:8080
-- http://localhost:5173
-
-Editar `CorsConfig.java` para agregar más orígenes.
+CORS está configurado para permitir requests desde `http://localhost:3000`, `http://localhost:8080`
+y `http://localhost:5173`. Editar `config/CorsConfig.java` para agregar más orígenes.
 
 ## 📚 Tecnologías
 
-- **Spring Boot 3.2.0** - Framework
-- **Apache POI 5.2.5** - Lectura de Excel
-- **Lombok** - Reducir boilerplate
-- **Maven** - Gestión de dependencias
-
-## 📝 Notas
-
-- Los datos se cargan en memoria al iniciar (no hay DB todavía)
-- Próximos pasos: agregar controllers REST 
-- Migración a PostgreSQL 
+- **Spring Boot 3.2.0** (Web, Security, Data JPA, Validation)
+- **JJWT** — emisión/validación de JWT
+- **H2** (dev) / **PostgreSQL** (driver incluido, a configurar para producción)
+- **Apache POI** — lectura de Excel
+- **Lombok**
+- **FastAPI + OpenCV** (`face-recognition-service/`, Python aparte) — verificación facial

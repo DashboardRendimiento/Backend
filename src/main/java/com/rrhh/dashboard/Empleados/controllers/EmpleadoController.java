@@ -4,9 +4,14 @@ import com.rrhh.dashboard.Empleados.Entity.Empleados;
 import com.rrhh.dashboard.Empleados.services.EmpleadoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 
@@ -30,9 +35,18 @@ public class EmpleadoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<Empleados> crear(@RequestBody Empleados empleado) {
-        Empleados nuevoEmpleado = service.guardar(empleado);
+    /**
+     * multipart/form-data en vez de JSON: ademas de los datos del empleado,
+     * acepta la foto de referencia para verificacion facial (modulo
+     * Asistencia) — se enrola en el alta, no hay endpoint separado para
+     * cargarla despues.
+     */
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('SUPERADMIN')")
+    public ResponseEntity<Empleados> crear(@RequestPart("empleado") Empleados empleado,
+                                            @RequestPart(value = "foto", required = false) MultipartFile foto) {
+        byte[] fotoBytes = leerBytes(foto);
+        Empleados nuevoEmpleado = service.guardar(empleado, fotoBytes);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoEmpleado);
     }
 
@@ -92,6 +106,59 @@ public class EmpleadoController {
     public ResponseEntity<Map<String, Long>> totalEmpleados() {
         Long total = service.totalEmpleados();
         return ResponseEntity.ok(Map.of("total", total));
+    }
+
+    @GetMapping("/buscar/dni/{dni}")
+    public ResponseEntity<List<Empleados>> buscarPorDni(@PathVariable Long dni) {
+        List<Empleados> empleados = service.buscarPorDni(dni);
+        if (empleados.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(empleados);
+    }
+
+    @GetMapping("/buscar/nombre/{nombre}")
+    public ResponseEntity<List<Empleados>> buscarPorNombre(@PathVariable String nombre) {
+        List<Empleados> empleados = service.buscarPorNombre(nombre);
+        if (empleados.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(empleados);
+    }
+
+    @GetMapping("/buscar/apellido/{apellido}")
+    public ResponseEntity<List<Empleados>> buscarPorApellido(@PathVariable String apellido) {
+        List<Empleados> empleados = service.buscarPorApellido(apellido);
+        if (empleados.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(empleados);
+    }
+
+    /**
+     * Foto de referencia de verificacion facial — servida aparte (no en el
+     * JSON del empleado) para que quien revisa un fichaje pendiente
+     * (modulo Asistencia) pueda compararla a simple vista.
+     */
+    @GetMapping("/{id}/foto")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR')")
+    public ResponseEntity<byte[]> obtenerFoto(@PathVariable Long id) {
+        return service.buscarPorId(id)
+                .map(Empleados::getFotoReferencia)
+                .filter(foto -> foto != null && foto.length > 0)
+                .map(foto -> ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(foto))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private byte[] leerBytes(MultipartFile archivo) {
+        if (archivo == null || archivo.isEmpty()) {
+            return null;
+        }
+        try {
+            return archivo.getBytes();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Error leyendo el archivo subido", e);
+        }
     }
 
 }

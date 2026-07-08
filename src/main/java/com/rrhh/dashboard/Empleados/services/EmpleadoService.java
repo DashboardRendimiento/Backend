@@ -26,8 +26,19 @@ public class EmpleadoService {
 
     @Transactional
     public Empleados guardar(Empleados empleado) {
+        return guardar(empleado, null);
+    }
+
+    /**
+     * fotoReferencia es la foto de enrolamiento para verificacion facial
+     * (modulo Asistencia) — se carga en el alta del empleado, no despues.
+     */
+    @Transactional
+    public Empleados guardar(Empleados empleado, byte[] fotoReferencia) {
         hashPasswordIfPresent(empleado);
-        
+        if (fotoReferencia != null && fotoReferencia.length > 0) {
+            empleado.setFotoReferencia(fotoReferencia);
+        }
         return repository.save(empleado);
 
     }
@@ -50,6 +61,18 @@ public class EmpleadoService {
 
     public Long contarPorPuesto(String puesto) {
         return repository.countByPuesto(puesto);
+    }
+
+    public List<Empleados> buscarPorDni(Long dni) {
+        return repository.findByDni(dni);
+    }
+
+    public List<Empleados> buscarPorNombre(String nombre) {
+        return repository.findByNombreContainingIgnoreCase(nombre);
+    }
+
+    public List<Empleados> buscarPorApellido(String apellido) {
+        return repository.findByApellidoContainingIgnoreCase(apellido);
     }
 
     @Transactional
