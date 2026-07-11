@@ -58,8 +58,7 @@ erDiagram
         LocalDate fecha
         Integer bultosPreparados
         Integer pedidosPreparados
-        Integer pedidosEncargados
-        LocalDateTime fechaCarga
+        LocalDateTime fechaHora
         Long attendance_id FK "FK real (@ManyToOne), no nulo — el fichaje de Entrada abierto al momento de cargar"
         Long empleado_id FK "FK real (@ManyToOne)"
     }

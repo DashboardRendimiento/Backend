@@ -12,8 +12,6 @@ public class ProductividadResponseDto {
 
     private LocalDate fecha;
 
-    private Integer pedidosEncargados;
-
     private Integer pedidosPreparados;
 
     private Integer pedidosPendientes;

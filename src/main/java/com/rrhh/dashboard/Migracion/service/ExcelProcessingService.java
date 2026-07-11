@@ -100,7 +100,6 @@ public class ExcelProcessingService {
         productividad.setFecha(row.getFecha() != null ? row.getFecha() : LocalDate.now());
         productividad.setBultosPreparados(row.getBultosPreparados());
         productividad.setPedidosPreparados(row.getPedidosPreparados());
-        productividad.setPedidosEncargados(row.getPedidosEncargados());
 
         productividadRepository.save(productividad);
     }

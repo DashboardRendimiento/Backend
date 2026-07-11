@@ -18,7 +18,6 @@ public class ExcelRowDTO {
     private LocalDate fecha;
     private Integer bultosPreparados;
     private Integer pedidosPreparados;
-    private Integer pedidosEncargados;
     private Integer pedidosPendientes;
     
     // Datos de asistencia diaria

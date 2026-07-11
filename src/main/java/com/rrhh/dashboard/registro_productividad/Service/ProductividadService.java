@@ -2,7 +2,6 @@ package com.rrhh.dashboard.registro_productividad.Service;
 
 import com.rrhh.dashboard.Asistencia.Entity.AttendanceRecord;
 import com.rrhh.dashboard.Asistencia.Repository.AttendanceRecordRepository;
-import com.rrhh.dashboard.Asistencia.exceptions.NoOpenAttendanceRecordException;
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
 import com.rrhh.dashboard.Empleados.services.EmpleadoService;
 import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
@@ -14,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 @Service
 @RequiredArgsConstructor
@@ -21,7 +21,8 @@ public class ProductividadService {
 
     private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
-    private final AttendanceRecordRepository attendanceRecordRepository;
+    private final AttendanceRecordRepository attendanceRepository;
+
 
 
     private Empleados obtenerEmpleadoAutenticado() {
@@ -36,23 +37,33 @@ public class ProductividadService {
                         new RuntimeException("Empleado no encontrado con id: " + empleadoId));
     }
 
+    private AttendanceRecord obtenerAsistenciaActiva(Empleados empleado) {
+        return attendanceRepository
+                .findFirstByEmployeeIdAndClockOutAtIsNullOrderByClockInAtDesc(empleado.getId())
+                .orElseThrow(() ->
+                    new RuntimeException("No se encontró una asistencia activa para este empleado"));
+    }
 
     // ==========================
     // GUARDAR / ACTUALIZAR
     // ==========================
-
     public registro_productividad guardar(registro_productividad productividad) {
+
         Empleados empleado = obtenerEmpleadoAutenticado();
         productividad.setEmpleado(empleado);
 
-        AttendanceRecord asistenciaAbierta = attendanceRecordRepository
-                .findFirstByEmployeeIdAndClockOutAtIsNullOrderByClockInAtDesc(empleado.getId())
-                .orElseThrow(() -> new NoOpenAttendanceRecordException(empleado.getId()));
-        productividad.setAsistencia(asistenciaAbierta);
+        AttendanceRecord asistenciaActiva = obtenerAsistenciaActiva(empleado);
+        productividad.setAsistencia(asistenciaActiva);
+
+        // Fecha automática de registro
+        LocalDate ahora = LocalDate.now();
+
+        productividad.setFecha(ahora);
+        productividad.setFechaHora(LocalDateTime.now());
 
         return repository.save(productividad);
     }
-    // ==========================
+   // ==========================
     // CONSULTAS
     // ==========================
 

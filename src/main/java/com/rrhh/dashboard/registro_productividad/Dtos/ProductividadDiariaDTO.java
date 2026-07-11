@@ -11,8 +11,6 @@ public class ProductividadDiariaDTO {
 
     private LocalDate fecha;
 
-    private Integer pedidosEncargados;
-
     private Integer pedidosPreparados;
 
 

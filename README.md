@@ -88,16 +88,13 @@ curl http://localhost:8080/api/info
 
 ## 🗄️ Base de Datos
 
-Por defecto corre contra **H2 en memoria** (se recrea en cada arranque, `ddl-auto=update`) —
-pensado para desarrollo local, no persiste entre reinicios. La consola H2 queda disponible en
-`http://localhost:8080/h2-console` (JDBC URL `jdbc:h2:mem:Dashboard`, user `sa`, sin password).
+Corre contra **PostgreSQL**, configurado vía variables de entorno (`DB_URL`, `DB_USERNAME`,
+`DB_PASSWORD` en `spring.datasource.*`) que se leen de un archivo `.env` en la raíz del proyecto
+(`spring-dotenv`) — no está commiteado, cada quien crea el suyo con los datos de su propia
+instancia de Postgres.
 
 Al arrancar, además, se carga automáticamente el Excel de `src/main/resources/data/` (empleados,
 productividad y asistencia de ejemplo) — ver `ExcelDataService`.
-
-Para producción, `pom.xml` ya incluye el driver de PostgreSQL; falta configurar
-`spring.datasource.*` contra una instancia real en `application.properties` (o vía variables de
-entorno) y ajustar `ddl-auto`.
 
 ## 🔧 Configuración relevante
 
@@ -146,7 +143,7 @@ y `http://localhost:5173`. Editar `config/CorsConfig.java` para agregar más or�
 
 - **Spring Boot 3.2.0** (Web, Security, Data JPA, Validation)
 - **JJWT** — emisión/validación de JWT
-- **H2** (dev) / **PostgreSQL** (driver incluido, a configurar para producción)
+- **PostgreSQL** — vía `.env` (`spring-dotenv`)
 - **Apache POI** — lectura de Excel
 - **Lombok**
 - **FastAPI + OpenCV** (`face-recognition-service/`, Python aparte) — verificación facial
