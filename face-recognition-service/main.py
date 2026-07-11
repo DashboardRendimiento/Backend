@@ -1,18 +1,3 @@
-"""
-Microservicio de comparacion facial 1:1 (verificacion, no identificacion):
-compara una foto "captura" contra una foto "referencia" y devuelve que tan
-parecidas son. Usa OpenCV puro (Haar Cascade para detectar el rostro +
-LBPHFaceRecognizer para comparar) en vez de dlib/face_recognition o un
-modelo de deep learning: instala sin compilar nada (wheels precompilados),
-a costa de menor precision que un motor mas sofisticado. Pensado para ser
-reemplazado despues por otro motor sin cambiar este contrato HTTP.
-
-La decision de "similitud suficiente o no" NO se toma aca: este servicio
-siempre responde 200 con la similitud calculada (o con rostroDetectado*
-en false si no encontro una cara), y quien llama (el backend Java) decide
-que hacer con ese numero.
-"""
-
 import cv2
 import numpy as np
 from fastapi import FastAPI, File, UploadFile
@@ -44,8 +29,8 @@ def _detectar_rostro(imagen_bytes: bytes):
     return cv2.resize(recorte, TAMANIO_ROSTRO)
 
 
-@app.get("/salud")
-def salud():
+@app.get("/health")
+def health():
     return {"status": "ok"}
 
 
