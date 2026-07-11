@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.util.List;
 @Service
@@ -40,17 +41,17 @@ public class ProductividadService {
     // GUARDAR / ACTUALIZAR
     // ==========================
 
-public registro_productividad guardar(registro_productividad productividad) {
-    Empleados empleado = obtenerEmpleadoAutenticado();
-    productividad.setEmpleado(empleado);
+    public registro_productividad guardar(registro_productividad productividad) {
+        Empleados empleado = obtenerEmpleadoAutenticado();
+        productividad.setEmpleado(empleado);
 
-    AttendanceRecord asistenciaAbierta = attendanceRecordRepository
-            .findFirstByEmployeeIdAndClockOutAtIsNullOrderByClockInAtDesc(empleado.getId())
-            .orElseThrow(() -> new NoOpenAttendanceRecordException(empleado.getId()));
-    productividad.setAsistencia(asistenciaAbierta);
+        AttendanceRecord asistenciaAbierta = attendanceRecordRepository
+                .findFirstByEmployeeIdAndClockOutAtIsNullOrderByClockInAtDesc(empleado.getId())
+                .orElseThrow(() -> new NoOpenAttendanceRecordException(empleado.getId()));
+        productividad.setAsistencia(asistenciaAbierta);
 
-    return repository.save(productividad);
-}
+        return repository.save(productividad);
+    }
     // ==========================
     // CONSULTAS
     // ==========================
@@ -82,7 +83,7 @@ public registro_productividad guardar(registro_productividad productividad) {
 
         return repository.findByEmpleadoIdAndFecha(empleadoId, fecha);
     }
-  
+
     public List<registro_productividad> obtenerMiProductividadPorFecha(LocalDate fecha) {
 
         return repository.findByEmpleadoIdAndFecha(
