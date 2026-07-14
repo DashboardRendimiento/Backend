@@ -24,54 +24,153 @@ public class EmpleadoService {
         return repository.findAll();
     }
 
-    @Transactional
-    public Empleados guardar(Empleados empleado) {
-        hashPasswordIfPresent(empleado);
-        
-        return repository.save(empleado);
-
-    }
-
     public Optional<Empleados> buscarPorId(Long id) {
-        return repository.findById(id);
+        if (id == null || id <= 0) {
+            throw new RuntimeException("El ID debe ser un número positivo");
+        }
+        Optional<Empleados> empleado = repository.findById(id);
+        if (empleado.isEmpty()) {
+            throw new RuntimeException("No se encontró ningún empleado con el ID: " + id);
+        }
+        return empleado;
     }
 
     public List<Empleados> buscarPorSector(String sector) {
-        return repository.findBySector(sector);
+        if (sector == null || sector.isBlank()) {
+            throw new RuntimeException("El sector no puede estar vacío");
+        }
+        List<Empleados> empleados = repository.findBySector(sector);
+        if (empleados.isEmpty()) {
+            throw new RuntimeException("No se encontraron empleados en el sector: " + sector);
+        }
+        return empleados;
     }
 
     public List<Empleados> buscarPorPuesto(String puesto) {
-        return repository.findByPuesto(puesto);
+        if (puesto == null || puesto.isBlank()) {
+            throw new RuntimeException("El puesto no puede estar vacío");
+        }
+        List<Empleados> empleados = repository.findByPuesto(puesto);
+        if (empleados.isEmpty()) {
+            throw new RuntimeException("No se encontraron empleados con el puesto: " + puesto);
+        }
+        return empleados;
     }
 
     public Long contarPorSector(String sector) {
-        return repository.countBySector(sector);
+        if (sector == null || sector.isBlank()) {
+            throw new RuntimeException("El sector no puede estar vacío");
+        }
+        Long cantidad = repository.countBySector(sector);
+        if (cantidad == 0) {
+            throw new RuntimeException("No se encontraron empleados en el sector: " + sector);
+        }
+        return cantidad;
     }
 
     public Long contarPorPuesto(String puesto) {
-        return repository.countByPuesto(puesto);
+        if (puesto == null || puesto.isBlank()) {
+            throw new RuntimeException("El puesto no puede estar vacío");
+        }
+        Long cantidad = repository.countByPuesto(puesto);
+        if (cantidad == 0) {
+            throw new RuntimeException("No se encontraron empleados con el puesto: " + puesto);
+        }
+        return cantidad;
     }
 
     public List<Empleados> buscarPorDni(Long dni) {
-        return repository.findByDni(dni);
+        if (dni == null) {
+            throw new RuntimeException("El DNI no puede ser nulo");
+        }
+        if (dni.toString().length() < 7 || dni.toString().length() > 8) {
+            throw new RuntimeException("El DNI debe tener entre 7 y 8 dígitos");
+        }
+        List<Empleados> empleados = repository.findByDni(dni);
+        if (empleados.isEmpty()) {
+            throw new RuntimeException("No se encontraron empleados con el DNI: " + dni);
+        }
+        return empleados;
     }
 
     public List<Empleados> buscarPorNombre(String nombre) {
-        return repository.findByNombreContainingIgnoreCase(nombre);
+        if (nombre == null || nombre.isBlank()) {
+            throw new RuntimeException("El nombre no puede estar vacío");
+        }
+        if (nombre.length() < 2) {
+            throw new RuntimeException("El nombre debe tener al menos 2 caracteres");
+        }
+        List<Empleados> empleados = repository.findByNombreContainingIgnoreCase(nombre);
+        if (empleados.isEmpty()) {
+            throw new RuntimeException("No se encontraron empleados con el nombre: " + nombre);
+        }
+        return empleados;
     }
 
     public List<Empleados> buscarPorApellido(String apellido) {
-        return repository.findByApellidoContainingIgnoreCase(apellido);
+        if (apellido == null || apellido.isBlank()) {
+            throw new RuntimeException("El apellido no puede estar vacío");
+        }
+        if (apellido.length() < 2) {
+            throw new RuntimeException("El apellido debe tener al menos 2 caracteres");
+        }
+        List<Empleados> empleados = repository.findByApellidoContainingIgnoreCase(apellido);
+        if (empleados.isEmpty()) {
+            throw new RuntimeException("No se encontraron empleados con el apellido: " + apellido);
+        }
+        return empleados;
+    }
+
+    public Long totalEmpleados() {
+        Long total = repository.count();
+        if (total == 0) {
+            throw new RuntimeException("No hay empleados registrados en el sistema");
+        }
+        return total;
+    }
+    
+    @Transactional
+    public Empleados guardar(Empleados empleado) {
+        if (repository.existsByEmail(empleado.getEmail())) {
+            throw new RuntimeException("Ya existe un usuario con el email: " + empleado.getEmail());
+        }
+        
+        if (empleado.getDni() != null && repository.existsByDni(empleado.getDni())) {
+            throw new RuntimeException("Ya existe un usuario con el DNI: " + empleado.getDni());
+        }
+        
+        hashPasswordIfPresent(empleado);
+        return repository.save(empleado);
     }
 
     @Transactional
     public Empleados actualizar(Long id, Empleados empleadoActualizado) {
         return repository.findById(id)
                 .map(empleado -> {
+                    if (!empleado.getEmail().equals(empleadoActualizado.getEmail()) &&
+                        repository.existsByEmail(empleadoActualizado.getEmail())) {
+                        throw new RuntimeException("Ya existe un usuario con el email: " + empleadoActualizado.getEmail());
+                    }
+                    
+                    if (!empleado.getDni().equals(empleadoActualizado.getDni()) &&
+                        repository.existsByDni(empleadoActualizado.getDni())) {
+                        throw new RuntimeException("Ya existe un usuario con el DNI: " + empleadoActualizado.getDni());
+                    }
+                    
                     empleado.setNombre(empleadoActualizado.getNombre());
                     empleado.setApellido(empleadoActualizado.getApellido());
+                    empleado.setDni(empleadoActualizado.getDni());
                     empleado.setSector(empleadoActualizado.getSector());
                     empleado.setPuesto(empleadoActualizado.getPuesto());
+                    empleado.setTurno(empleadoActualizado.getTurno());
+                    empleado.setEmail(empleadoActualizado.getEmail());
+                    empleado.setRole(empleadoActualizado.getRole());
+                    
+                    if (empleadoActualizado.getPasswordHash() != null && 
+                        !empleadoActualizado.getPasswordHash().isBlank()) {
+                        empleado.setPasswordHash(passwordEncoder.encode(empleadoActualizado.getPasswordHash()));
+                    }
+                    
                     return repository.save(empleado);
                 })
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado con ID: " + id));
@@ -85,16 +184,6 @@ public class EmpleadoService {
         repository.deleteById(id);
     }
 
-    public Long totalEmpleados() {
-        return repository.count();
-    }
-
-    /**
-     * El body de creacion trae la contrasena en texto plano en el campo
-     * passwordHash (mismo campo que la entidad persiste ya hasheado) — se
-     * reemplaza aca por su hash BCrypt antes de guardar, para que nunca
-     * quede texto plano en la base.
-     */
     private void hashPasswordIfPresent(Empleados empleado) {
         String rawPassword = empleado.getPasswordHash();
         if (rawPassword != null && !rawPassword.isBlank()) {

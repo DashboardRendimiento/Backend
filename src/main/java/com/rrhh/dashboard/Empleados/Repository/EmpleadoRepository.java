@@ -30,5 +30,7 @@ public interface EmpleadoRepository extends JpaRepository<Empleados, Long> {
      List<Empleados> findByNombreContainingIgnoreCase(String nombre);
 
      List<Empleados> findByApellidoContainingIgnoreCase(String apellido);
+    boolean existsByEmail(String email);
+    boolean existsByDni(Long dni);
 
 }
