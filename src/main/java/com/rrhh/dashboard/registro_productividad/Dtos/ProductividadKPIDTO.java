@@ -23,4 +23,5 @@ public class ProductividadKPIDTO {
     private Double objetivoPedidos;
     private Double pedidosPendientesObjetivo;
     private Double porcentajeCumplimiento;
+    private java.time.LocalDateTime ultimaHoraCarga;
 }

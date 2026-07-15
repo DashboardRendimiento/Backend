@@ -73,6 +73,12 @@ public class ProductividadKPIService {
                         .sum();
 
         kpi.setTotalPedidos(totalPedidos);
+        
+        data.stream()
+            .map(registro_productividad::getFechaCarga)
+            .filter(java.util.Objects::nonNull)
+            .max(java.time.LocalDateTime::compareTo)
+            .ifPresent(kpi::setUltimaHoraCarga);
 
         kpi.setTotalBultos(totalBultos);
 

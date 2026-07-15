@@ -8,7 +8,9 @@ public class ProductividadEmpleadoKPI {
     private String nombre;
 
     private Integer totalPedidos;
+    private Double porcentajeCumplimiento;
     private Integer totalBultos;
     private Integer totalPendientes;
+    private java.time.LocalDateTime ultimaHoraCarga;
 
 }
