@@ -43,8 +43,16 @@ public class EmpleadoService {
 
     }
 
+    @Transactional
     public Optional<Empleados> buscarPorId(Long id) {
         return repository.findById(id);
+    }
+
+    @Transactional
+    public void actualizarFoto(Long id, byte[] fotoBytes) {
+        Empleados empleado = repository.findById(id).orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+        empleado.setFotoReferencia(fotoBytes);
+        repository.save(empleado);
     }
 
     public List<Empleados> buscarPorSector(String sector) {

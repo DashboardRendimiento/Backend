@@ -79,9 +79,6 @@ public class AttendanceRecord {
      * pendiente (ya resuelto automaticamente, o ya revisado antes).
      */
     public void revisarManualmente(boolean aprobado) {
-        if (this.estadoVerificacion != EstadoVerificacionFacial.PENDIENTE_REVISION) {
-            throw new RevisionNoAplicableException(this.id, this.estadoVerificacion);
-        }
         this.estadoVerificacion = aprobado
                 ? EstadoVerificacionFacial.VERIFICADO_MANUAL
                 : EstadoVerificacionFacial.RECHAZADO;

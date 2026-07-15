@@ -12,9 +12,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.util.List;
+
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ProductividadService {
 
@@ -40,13 +44,26 @@ public class ProductividadService {
     // GUARDAR / ACTUALIZAR
     // ==========================
 
-public registro_productividad guardar(registro_productividad productividad) {
-    Empleados empleado = obtenerEmpleadoAutenticado();
-    productividad.setEmpleado(empleado);
+public registro_productividad guardar(registro_productividad productividad, Long dtoEmpleadoId) {
+    Empleados autenticado = obtenerEmpleadoAutenticado();
+    Empleados empleadoAsignado;
+
+    if (dtoEmpleadoId != null && !autenticado.getId().equals(dtoEmpleadoId)) {
+        String role = autenticado.getRole().name();
+        if (role.equals("EMPLEADO") || role.equals("SUPERVISOR")) {
+            throw new org.springframework.security.access.AccessDeniedException("Un " + role.toLowerCase() + " solo puede registrar su propia productividad");
+        }
+        empleadoAsignado = empleadosService.buscarPorId(dtoEmpleadoId)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + dtoEmpleadoId));
+    } else {
+        empleadoAsignado = autenticado;
+    }
+
+    productividad.setEmpleado(empleadoAsignado);
 
     AttendanceRecord asistenciaAbierta = attendanceRecordRepository
-            .findFirstByEmployeeIdAndClockOutAtIsNullOrderByClockInAtDesc(empleado.getId())
-            .orElseThrow(() -> new NoOpenAttendanceRecordException(empleado.getId()));
+            .findFirstByEmployeeIdAndClockOutAtIsNullOrderByClockInAtDesc(empleadoAsignado.getId())
+            .orElseThrow(() -> new NoOpenAttendanceRecordException(empleadoAsignado.getId()));
     productividad.setAsistencia(asistenciaAbierta);
 
     return repository.save(productividad);

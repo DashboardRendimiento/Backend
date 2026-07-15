@@ -28,10 +28,10 @@ public class ProductividadKpiController {
     }
 
     /**
-     * KPI de un empleado específico (Administrador)
+     * KPI de un empleado específico (Administrador / Empleado propio)
      */
     @GetMapping("/{empleadoId}")
-        @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<ProductividadKPIDTO> obtenerKPI(
             @PathVariable Long empleadoId) {
 

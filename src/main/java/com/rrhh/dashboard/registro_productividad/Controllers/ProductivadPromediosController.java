@@ -61,8 +61,7 @@ public class ProductivadPromediosController {
      * Promedio por jornada de un empleado específico.
      */
     @GetMapping("/{empleadoId}/jornada")
-        @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
-
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorJornada(
             @PathVariable Long empleadoId,
 
@@ -87,8 +86,7 @@ public class ProductivadPromediosController {
      * Promedio por hora de un empleado específico.
      */
     @GetMapping("/{empleadoId}/hora")
-        @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
-
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorHora(
             @PathVariable Long empleadoId,
 

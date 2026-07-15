@@ -35,6 +35,41 @@ public class EmpleadoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<Empleados> obtenerMiPerfil() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+            Long empleadoId = Long.valueOf(auth.getName());
+            return service.buscarPorId(empleadoId)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @PostMapping(value = "/me/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> subirMiFoto(@RequestParam("foto") MultipartFile foto) {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+            Long empleadoId = Long.valueOf(auth.getName());
+            byte[] fotoBytes = leerBytes(foto);
+            if (fotoBytes != null) {
+                service.actualizarFoto(empleadoId, fotoBytes);
+                return ResponseEntity.ok().build();
+            }
+            return ResponseEntity.badRequest().build();
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
     /**
      * multipart/form-data en vez de JSON: ademas de los datos del empleado,
      * acepta la foto de referencia para verificacion facial (modulo

@@ -93,7 +93,7 @@ public class AttendanceController {
     @GetMapping("/{id}/foto")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR')")
     public ResponseEntity<byte[]> obtenerFoto(@PathVariable Long id) {
-        byte[] foto = attendanceService.obtenerPorId(id).getFotoCapturada();
+        byte[] foto = attendanceService.obtenerFotoFichaje(id);
         if (foto == null || foto.length == 0) {
             return ResponseEntity.notFound().build();
         }

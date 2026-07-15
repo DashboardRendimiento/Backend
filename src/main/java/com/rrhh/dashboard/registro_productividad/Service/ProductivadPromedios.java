@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rrhh.dashboard.Asistencia.Entity.AttendanceRecord;
 import com.rrhh.dashboard.Asistencia.Repository.AttendanceRecordRepository;
@@ -23,6 +24,7 @@ import com.rrhh.dashboard.registro_productividad.repository.ProductividadReposit
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ProductivadPromedios {
       private final ProductividadRepository repository;
@@ -87,6 +89,11 @@ public class ProductivadPromedios {
         long totalHoras = asistencias.stream()
                 .mapToLong(this::calcularHorasTrabajadas)
                 .sum();
+        
+        if (totalHoras == 0) {
+            // Fallback: If no attendance records, assume 8 hours per worked day
+            totalHoras = registros.stream().map(registro_productividad::getFecha).distinct().count() * 8;
+        }
         
         if (totalHoras == 0) {
             return new PromedioProductividadDTO(0.0, 0.0, 0);

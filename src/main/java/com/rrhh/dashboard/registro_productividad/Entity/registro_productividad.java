@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.rrhh.dashboard.Asistencia.Entity.AttendanceRecord;
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,6 +46,7 @@ public class registro_productividad {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attendance_id", nullable = false)
+    @JsonIgnore
     private AttendanceRecord asistencia;
         
     @ManyToOne

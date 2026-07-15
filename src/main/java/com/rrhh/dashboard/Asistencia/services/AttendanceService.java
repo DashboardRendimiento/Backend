@@ -112,6 +112,13 @@ public class AttendanceService {
     }
 
     @Transactional(readOnly = true)
+    public byte[] obtenerFotoFichaje(Long id) {
+        return repository.findById(id)
+                .map(AttendanceRecord::getFotoCapturada)
+                .orElse(null);
+    }
+
+    @Transactional(readOnly = true)
     public List<AttendanceRecord> listarPendientesDeRevision() {
         return repository.findByEstadoVerificacion(EstadoVerificacionFacial.PENDIENTE_REVISION);
     }
@@ -120,7 +127,7 @@ public class AttendanceService {
     public AttendanceRecord revisar(Long id, boolean aprobado) {
         AttendanceRecord record = obtenerPorId(id);
         record.revisarManualmente(aprobado);
-        return record;
+        return repository.save(record);
     }
 
     @Transactional(readOnly = true)
