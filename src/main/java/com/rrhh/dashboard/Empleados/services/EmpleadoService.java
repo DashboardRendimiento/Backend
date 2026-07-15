@@ -2,6 +2,9 @@ package com.rrhh.dashboard.Empleados.services;
 
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
 import com.rrhh.dashboard.Empleados.Repository.EmpleadoRepository;
+
+import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +23,13 @@ public class EmpleadoService {
         this.passwordEncoder = passwordEncoder;
     }
 
+ 
+
     public List<Empleados> listar() {
         return repository.findAll();
     }
 
-    public Optional<Empleados> buscarPorId(Long id) {
+   public Optional<Empleados> buscarPorId(Long id) {
         if (id == null || id <= 0) {
             throw new RuntimeException("El ID debe ser un número positivo");
         }
@@ -34,7 +39,6 @@ public class EmpleadoService {
         }
         return empleado;
     }
-
     public List<Empleados> buscarPorSector(String sector) {
         if (sector == null || sector.isBlank()) {
             throw new RuntimeException("El sector no puede estar vacío");
