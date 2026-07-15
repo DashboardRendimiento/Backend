@@ -2,8 +2,10 @@ package com.rrhh.dashboard.Asistencia.controllers;
 
 import com.rrhh.dashboard.Asistencia.exceptions.AlreadyClockedInException;
 import com.rrhh.dashboard.Asistencia.exceptions.AlreadyClockedOutException;
+import com.rrhh.dashboard.Asistencia.exceptions.AttendanceRecordNotFoundException;
 import com.rrhh.dashboard.Asistencia.exceptions.ForbiddenAttendanceAccessException;
 import com.rrhh.dashboard.Asistencia.exceptions.NoOpenAttendanceRecordException;
+import com.rrhh.dashboard.Asistencia.exceptions.RevisionNoAplicableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,6 +36,16 @@ public class AsistenciaExceptionHandler {
     @ExceptionHandler(ForbiddenAttendanceAccessException.class)
     public ResponseEntity<Map<String, Object>> handleForbiddenAccess(ForbiddenAttendanceAccessException ex) {
         return body(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    @ExceptionHandler(AttendanceRecordNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(AttendanceRecordNotFoundException ex) {
+        return body(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(RevisionNoAplicableException.class)
+    public ResponseEntity<Map<String, Object>> handleRevisionNoAplicable(RevisionNoAplicableException ex) {
+        return body(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     private ResponseEntity<Map<String, Object>> body(HttpStatus status, String message) {

@@ -1,11 +1,15 @@
 package com.rrhh.dashboard.Asistencia.Entity;
 
 import com.rrhh.dashboard.Asistencia.exceptions.AlreadyClockedOutException;
+import com.rrhh.dashboard.Asistencia.exceptions.RevisionNoAplicableException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -39,13 +43,45 @@ public class AttendanceRecord {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    public AttendanceRecord() {
+    @Lob
+    private byte[] fotoCapturada;
+
+    private Double similitudFacial;
+
+    @Enumerated(EnumType.STRING)
+    private EstadoVerificacionFacial estadoVerificacion;
+
+    protected AttendanceRecord() {
         // JPA
     }
 
     public AttendanceRecord(Long employeeId) {
         this.employeeId = employeeId;
         this.clockInAt = Instant.now();
+    }
+
+    /**
+     * Completa el resultado de la verificacion facial de este fichaje de
+     * Entrada — nunca lanza ni bloquea nada, el fichaje ya esta registrado
+     * antes de llamar esto (ver AttendanceService.clockIn).
+     */
+    public void registrarVerificacionFacial(byte[] fotoCapturada, Double similitudFacial,
+                                             EstadoVerificacionFacial estadoVerificacion) {
+        this.fotoCapturada = fotoCapturada;
+        this.similitudFacial = similitudFacial;
+        this.estadoVerificacion = estadoVerificacion;
+    }
+
+    /**
+     * Resuelve una verificacion pendiente: un humano (Administrador/
+     * SuperAdmin/Supervisor) vio la foto capturada y decide si corresponde
+     * al empleado o no. No se puede revisar un fichaje que no esta
+     * pendiente (ya resuelto automaticamente, o ya revisado antes).
+     */
+    public void revisarManualmente(boolean aprobado) {
+        this.estadoVerificacion = aprobado
+                ? EstadoVerificacionFacial.VERIFICADO_MANUAL
+                : EstadoVerificacionFacial.RECHAZADO;
     }
 
     @PrePersist
@@ -99,8 +135,19 @@ public class AttendanceRecord {
         return updatedAt;
     }
 
+    public byte[] getFotoCapturada() {
+        return fotoCapturada;
+    }
+
+    public Double getSimilitudFacial() {
+        return similitudFacial;
+    }
+
+    public EstadoVerificacionFacial getEstadoVerificacion() {
+        return estadoVerificacion;
+    }
+
     public static Object builder() {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'builder'");
     }
 }

@@ -1,20 +1,24 @@
 # Manual de Usuario — Dashboard RRHH
 
-API REST para la gestión de RRHH de un depósito: empleados, fichaje de asistencia, horarios,
-productividad, objetivos y reportes. Este manual describe qué puede hacer cada rol y cómo usar
-cada funcionalidad.
+API REST para la gestión de RRHH de un depósito: empleados, fichaje de asistencia (con
+verificación facial), horarios, productividad y objetivos. Este manual describe qué puede hacer
+cada rol y cómo usar cada funcionalidad.
 
 > No hay frontend todavía: todo se usa contra la API REST (por ejemplo con `curl`, Postman o
 > Insomnia). Los ejemplos de este manual usan `curl`.
+
+> La verificación facial del fichaje de Entrada (sección 4.1) depende de un microservicio aparte
+> (`face-recognition-service/`, Python) — sin levantarlo, todas las entradas quedan
+> `PENDIENTE_REVISION` (nunca bloquea el fichaje). Ver su `README.md` para instalarlo y correrlo.
 
 ## 1. Roles del sistema
 
 | Rol | Qué puede hacer |
 |---|---|
-| **EMPLEADO** | Fichar su propia entrada/salida, cargar su propia productividad hora a hora, ver sus propios objetivos y su progreso. |
-| **ADMINISTRADOR** | Todo lo de gestión: asignar horarios, cargar/corregir productividad de cualquiera, crear objetivos, ver productividad y asistencia de todos, exportar reportes. **No puede** dar de alta empleados. |
-| **SUPERADMIN** | Todo lo de ADMINISTRADOR, más dar de alta empleados (es el único rol que puede). |
-| **SUPERVISOR** | Ver la productividad y la asistencia de todos los empleados (general e individual) y exportar reportes. No gestiona horarios ni objetivos ni da de alta empleados. Como también es un empleado de la empresa, puede fichar su propia asistencia y cargar su propia productividad. |
+| **EMPLEADO** | Fichar su propia entrada/salida, cargar su propia productividad diaria (mientras tenga una Entrada fichada), ver sus propios objetivos y sus propios KPIs/promedios de productividad. |
+| **ADMINISTRADOR** | Asignar horarios, crear/actualizar/eliminar objetivos, ver productividad, KPIs y asistencia de todos. **No puede** dar de alta empleados ni cargar productividad en nombre de otro (eso solo lo hace cada empleado por sí mismo, sección 6). |
+| **SUPERADMIN** | Dar de alta empleados (es el único rol que puede) y gestionar objetivos como ADMINISTRADOR. No tiene acceso a las consultas de productividad/KPIs de otros empleados (ver catálogo, sección 9). |
+| **SUPERVISOR** | Ver la productividad, KPIs y asistencia de todos los empleados (general e individual). No gestiona horarios ni objetivos ni da de alta empleados. Como también es un empleado de la empresa, puede fichar su propia asistencia y cargar su propia productividad. |
 
 Todos los roles, salvo aclaración, fichan su propia asistencia y cargan su propia productividad
 de la misma forma que un EMPLEADO — la diferencia entre roles está en qué pueden ver o
@@ -56,26 +60,25 @@ desarrollo:
 
 ### Dar de alta un empleado (solo SUPERADMIN)
 
+El alta es `multipart/form-data` (no JSON): una parte `empleado` con los datos (en JSON) y una
+parte `foto` opcional — la foto de referencia para la verificación facial del fichaje de Entrada
+(sección 4). Si no se enrola una foto acá, ese empleado no tiene manera de fichar con
+verificación automática; sus entradas van a quedar siempre pendientes de revisión humana.
+
 ```bash
 curl -X POST http://localhost:8080/api/empleados \
-  -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token-de-superadmin>" \
-  -d '{
-    "nombre": "Juan",
-    "apellido": "Lopez",
-    "dni": 30111222,
-    "sector": "Deposito",
-    "puesto": "Operario",
-    "email": "juan@example.com",
-    "passwordHash": "claveTemporal123",
-    "role": "EMPLEADO"
-  }'
+  -F 'empleado={"nombre":"Juan","apellido":"Lopez","dni":30111222,"sector":"Deposito","puesto":"Operario","email":"juan@example.com","passwordHash":"claveTemporal123","role":"EMPLEADO"};type=application/json' \
+  -F "foto=@juan.jpg"
 ```
 
 El campo `passwordHash` recibe la contraseña **en texto plano** — el sistema la encripta
 automáticamente antes de guardarla; nunca queda ni se devuelve en texto plano por la API.
 
 Si no se especifica `role`, el empleado queda como `EMPLEADO` por defecto.
+
+La foto de referencia se puede consultar (no viaja en el JSON del empleado) con
+`GET /api/empleados/{id}/foto` (ADMINISTRADOR/SUPERADMIN/SUPERVISOR).
 
 ### Buscar empleados
 
@@ -101,11 +104,12 @@ Cada empleado ficha su propia entrada y salida — la hora la pone el servidor, 
 así que no se puede "cargar" una hora distinta a la real.
 
 ```bash
-# Entrada
+# Entrada (multipart, foto opcional pero recomendada — ver mas abajo)
 curl -X POST http://localhost:8080/api/attendance/2/clock-in \
-  -H "Authorization: Bearer <token-del-empleado-id-2>"
+  -H "Authorization: Bearer <token-del-empleado-id-2>" \
+  -F "foto=@captura.jpg"
 
-# Salida
+# Salida (sin foto, sin cambios)
 curl -X POST http://localhost:8080/api/attendance/2/clock-out \
   -H "Authorization: Bearer <token-del-empleado-id-2>"
 ```
@@ -114,6 +118,44 @@ Reglas:
 - No se puede fichar una segunda entrada sin haber fichado la salida anterior (409).
 - No se puede fichar en nombre de otro empleado — el `{employeeId}` de la URL tiene que ser el
   mismo que el del token (403 si no coincide).
+
+### 4.1. Verificación facial en la Entrada
+
+Al fichar Entrada con una foto (parte `foto`), el sistema la compara contra la foto de referencia
+del empleado (cargada al darlo de alta, sección 3) usando un microservicio propio
+(`face-recognition-service/`, ver su `README.md` para levantarlo). **La entrada se registra
+siempre**, tenga o no foto, coincida o no la cara — lo único que cambia es el
+`estadoVerificacion` del fichaje:
+
+| Estado | Cuándo pasa |
+|---|---|
+| `VERIFICADO_AUTOMATICO` | Se detectó el rostro en ambas fotos y la similitud alcanzó el umbral (`app.reconocimiento-facial.umbral-auto`, 0.75 por defecto). |
+| `PENDIENTE_REVISION` | Similitud insuficiente, no se detectó el rostro en alguna foto, el empleado no tiene foto de referencia, o el microservicio no respondió. |
+| `VERIFICADO_MANUAL` / `RECHAZADO` | Un humano ya revisó un fichaje que estaba `PENDIENTE_REVISION` (ver más abajo). |
+
+Si no se manda `foto` en el clock-in, el fichaje queda sin `estadoVerificacion` (no aplica).
+
+### 4.2. Revisar fichajes pendientes (ADMINISTRADOR/SUPERADMIN/SUPERVISOR)
+
+```bash
+# Listar los pendientes
+curl http://localhost:8080/api/attendance/pendientes -H "Authorization: Bearer <token-admin>"
+
+# Ver la foto capturada en un fichaje puntual
+curl http://localhost:8080/api/attendance/7/foto -H "Authorization: Bearer <token-admin>" -o foto7.jpg
+
+# Aprobar o rechazar (compara foto7.jpg contra la de referencia del empleado, a simple vista)
+curl -X POST http://localhost:8080/api/attendance/7/revisar \
+  -H "Content-Type: application/json" -H "Authorization: Bearer <token-admin>" \
+  -d '{"aprobado": true}'
+```
+
+Rechazar **no borra** el fichaje — queda marcado `RECHAZADO`, para no perder el registro de
+auditoría (la entrada existió a esa hora; un humano determinó después que la foto no
+correspondía). Solo se puede revisar un fichaje que esté `PENDIENTE_REVISION` (409 si no).
+
+Ver también: `GET /api/attendance`, `GET /api/attendance/empleado/{employeeId}` — listados
+generales, ya existentes.
 
 Ver todos los fichajes o los de un empleado puntual (ADMINISTRADOR/SUPERADMIN/SUPERVISOR):
 
@@ -142,40 +184,43 @@ curl -X POST http://localhost:8080/api/work-schedules \
 
 ## 6. Productividad
 
-Hay dos formas de cargar productividad, para dos casos distintos:
+Cada empleado carga su propia productividad diaria — el empleado lo pone el servidor (el token),
+nunca el cliente. **Requiere tener una Entrada fichada y sin Salida** (sección 4): la carga queda
+asociada a ese fichaje abierto, así que si no fichaste Entrada primero da 409.
 
-### 6.1. Autocarga horaria (cualquier empleado logueado)
-
-Cada empleado carga, hora a hora, cuántos pedidos (y opcionalmente bultos) preparó. El empleado y
-el momento de la carga los pone el servidor — no se puede cargar en nombre de otro ni con una
-hora distinta a la real. Como mucho una carga por hora calendario (la segunda carga dentro de la
-misma hora da 409).
-
-```bash
-curl -X POST http://localhost:8080/api/productividad/registro \
-  -H "Content-Type: application/json" -H "Authorization: Bearer <token-del-empleado>" \
-  -d '{"pedidosPreparados": 10, "bultosPreparados": 4}'
-```
-
-### 6.2. Carga administrativa (ADMINISTRADOR/SUPERADMIN)
-
-Para cargar o corregir la productividad diaria de cualquier empleado (por ejemplo, para volcar
-datos históricos):
+### 6.1. Cargar productividad del día (EMPLEADO)
 
 ```bash
 curl -X POST http://localhost:8080/api/productividad \
-  -H "Content-Type: application/json" -H "Authorization: Bearer <token-admin>" \
-  -d '{"empleado": 2, "fecha": "2026-07-06", "pedidosEncargados": 50, "pedidosPreparados": 40, "bultosPreparados": 15}'
+  -H "Content-Type: application/json" -H "Authorization: Bearer <token-del-empleado>" \
+  -d '{"fecha": "2026-07-06", "pedidosEncargados": 50, "pedidosPreparados": 40, "bultosPreparados": 15}'
 ```
 
-### 6.3. Consultas y KPIs (ADMINISTRADOR/SUPERADMIN/SUPERVISOR)
+- `GET /api/productividad/mi-productividad` — el propio empleado ve su historial.
+
+### 6.2. Consultas (ADMINISTRADOR/SUPERVISOR)
 
 - `GET /api/productividad` — todo.
-- `GET /api/productividad/empleado/{empleadoId}` — de un empleado.
-- `GET /api/productividad/empleado/nombre/{nombre}` — por nombre.
+- `GET /api/productividad/empleado/{id}` — de un empleado.
 - `GET /api/productividad/fecha?fecha=2026-07-06` — por fecha.
-- `GET /api/productividad/empleado/{empleadoId}/kpi` — totales de ese empleado (pedidos, bultos, pendientes).
-- `GET /api/productividad/kpi/global` — totales por empleado, todos juntos.
+
+### 6.3. KPIs
+
+Totales acumulados (pedidos, bultos) y cruce contra el objetivo semanal de tipo `PEDIDOS` vigente
+(si el empleado tiene uno cargado — sección 7):
+
+- `GET /api/productividad/kpi/me` — del propio empleado (EMPLEADO).
+- `GET /api/productividad/kpi/{empleadoId}` — de un empleado puntual (ADMINISTRADOR/SUPERVISOR).
+
+### 6.4. Promedios por rango de fechas
+
+Promedio de pedidos/bultos por jornada, o por hora trabajada (cruza contra los fichajes de
+Asistencia del rango), entre `inicio` y `fin` (`YYYY-MM-DD`, inclusive):
+
+- `GET /api/productividad/promedios/me/jornada?inicio=...&fin=...` — propio (EMPLEADO).
+- `GET /api/productividad/promedios/me/hora?inicio=...&fin=...` — propio (EMPLEADO).
+- `GET /api/productividad/promedios/{empleadoId}/jornada?inicio=...&fin=...` — de un empleado (ADMINISTRADOR/SUPERVISOR).
+- `GET /api/productividad/promedios/{empleadoId}/hora?inicio=...&fin=...` — de un empleado (ADMINISTRADOR/SUPERVISOR).
 
 ## 7. Objetivos
 
@@ -195,43 +240,19 @@ curl -X POST http://localhost:8080/api/objetivos \
 
 ### Ver el progreso
 
-`GET /api/objetivos/{id}/progreso` — el propio empleado dueño del objetivo puede verlo (o
-cualquier rol de gestión). Para `tipo=PEDIDOS`, cruza automáticamente lo cargado en Productividad
-(sección 6.1) contra la meta:
+No hay un endpoint dedicado a "progreso de objetivo" — el cruce contra lo cargado se ve dentro del
+KPI de Productividad (sección 6.3, `GET /api/productividad/kpi/me` o `/kpi/{empleadoId}`), que
+incluye `objetivoPedidos`, `pedidosPendientesObjetivo` y `porcentajeCumplimiento` para el objetivo
+`PEDIDOS` de la semana actual del empleado, si tiene uno cargado.
 
-```json
-{
-  "objetivo": { "id": 1, "empleadoId": 2, "tipo": "PEDIDOS", "valorSemanal": 120.0, "valorDiario": 20.0, "semanaInicio": "2026-07-06" },
-  "cargadoHoy": 10.0,
-  "pendienteHoy": 10.0,
-  "cargadoSemana": 10.0,
-  "pendienteSemana": 110.0
-}
-```
+**Objetivos de tipo `DINERO`** no se cruzan contra nada — el sistema todavía no tiene ningún
+módulo que registre ventas o dinero (queda como una meta informativa hasta que exista esa fuente
+de datos).
 
-**Objetivos de tipo `DINERO`** se guardan igual, pero `cargadoHoy`/`cargadoSemana` quedan en
-`null` — el sistema todavía no tiene ningún módulo que registre ventas o dinero para cruzar
-automáticamente ese progreso (queda como una meta informativa hasta que exista esa fuente de
-datos).
-
-- `GET /api/objetivos/{id}` — el objetivo sin el cálculo de progreso.
+- `GET /api/objetivos/{id}` — el objetivo.
 - `GET /api/objetivos/empleado/{empleadoId}` — todos los objetivos de un empleado.
 
-## 8. Reportes (ADMINISTRADOR/SUPERADMIN/SUPERVISOR)
-
-Exportan la productividad o la asistencia completa, en Excel o CSV.
-
-```bash
-curl "http://localhost:8080/api/reportes/productividad?formato=excel" \
-  -H "Authorization: Bearer <token-supervisor>" -o productividad.xlsx
-
-curl "http://localhost:8080/api/reportes/asistencia?formato=csv" \
-  -H "Authorization: Bearer <token-supervisor>" -o asistencia.csv
-```
-
-`formato` acepta `excel` (por defecto) o `csv`.
-
-## 9. Migración desde Excel
+## 8. Migración desde Excel
 
 `POST /api/excel/import` (sin restricción de rol hoy) — sube un `.xlsx`/`.xls` con hojas
 `Empleados`/`Productividad_Diaria`/`Asistencia_Diaria` y carga/actualiza esos datos en la base,
@@ -242,7 +263,7 @@ curl -X POST http://localhost:8080/api/excel/import \
   -F "file=@Dataset_RRHH_Deposito.xlsx"
 ```
 
-## 10. Catálogo completo de endpoints
+## 9. Catálogo completo de endpoints
 
 | Método | Ruta | Roles permitidos |
 |---|---|---|
@@ -256,19 +277,28 @@ curl -X POST http://localhost:8080/api/excel/import \
 | GET | /api/empleados/sector/{sector}, /puesto/{puesto} | Abierto |
 | GET | /api/empleados/contar/sector/{sector}, /contar/puesto/{puesto}, /total | Abierto |
 | GET | /api/empleados/buscar/dni/{dni}, /buscar/nombre/{nombre}, /buscar/apellido/{apellido} | Abierto |
+| GET | /api/empleados/{id}/foto | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
 | POST | /api/attendance/{employeeId}/clock-in, /clock-out | EMPLEADO, ADMINISTRADOR, SUPERADMIN, SUPERVISOR (solo el propio id) |
 | GET | /api/attendance | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
 | GET | /api/attendance/empleado/{employeeId} | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
+| GET | /api/attendance/pendientes, /{id}/foto | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
+| POST | /api/attendance/{id}/revisar | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
 | POST/PUT/DELETE | /api/work-schedules... | ADMINISTRADOR, SUPERADMIN |
 | GET | /api/work-schedules... | ADMINISTRADOR, SUPERADMIN |
-| POST | /api/productividad | ADMINISTRADOR, SUPERADMIN |
-| GET | /api/productividad... (listado, KPIs) | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
-| POST | /api/productividad/registro | EMPLEADO, ADMINISTRADOR, SUPERADMIN, SUPERVISOR (propio) |
+| POST | /api/productividad | EMPLEADO (propio, requiere Entrada fichada sin Salida) |
+| GET | /api/productividad/mi-productividad | EMPLEADO (propio) |
+| GET | /api/productividad, /empleado/{id}, /fecha | ADMINISTRADOR, SUPERVISOR |
+| GET | /api/productividad/kpi/me | EMPLEADO (propio) |
+| GET | /api/productividad/kpi/{empleadoId} | ADMINISTRADOR, SUPERVISOR |
+| GET | /api/productividad/promedios/me/jornada, /me/hora | EMPLEADO (propio) |
+| GET | /api/productividad/promedios/{empleadoId}/jornada, /hora | ADMINISTRADOR, SUPERVISOR |
 | POST/PUT/DELETE | /api/objetivos | ADMINISTRADOR, SUPERADMIN |
-| GET | /api/objetivos/{id}, /{id}/progreso, /empleado/{empleadoId} | Cualquier rol logueado, pero EMPLEADO solo ve lo propio |
-| GET | /api/reportes/productividad, /asistencia | ADMINISTRADOR, SUPERADMIN, SUPERVISOR |
+| GET | /api/objetivos/{id}, /empleado/{empleadoId} | Cualquier rol logueado, pero EMPLEADO solo ve lo propio |
 | POST | /api/excel/import | Abierto |
 
 **Nota:** "Abierto" significa que no exige rol específico (alcanza con que el request llegue), no
 que sea completamente público a nivel de red — hoy el proyecto tiene esos endpoints así porque
 así estaban antes de sumar roles; no fue parte de lo pedido en esta ronda de cambios.
+
+**Nota:** el módulo de Reportes (exportar productividad/asistencia a Excel/CSV) se retiró del
+proyecto en esta ronda de cambios; no hay reemplazo todavía.

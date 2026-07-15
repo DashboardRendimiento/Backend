@@ -76,8 +76,6 @@ public class ObjetivoService {
                 )
                 .orElse(null);
     }
- 
-    @Transactional(readOnly = true)
 
     private LocalDate lunesDeEstaSemana() {
         LocalDate hoy = LocalDate.now();

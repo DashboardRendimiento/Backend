@@ -1,4 +1,4 @@
-package com.rrhh.dashboard.registro_productividad.Controllers;
+﻿package com.rrhh.dashboard.registro_productividad.Controllers;
 
 
 import org.springframework.http.ResponseEntity;
@@ -25,6 +25,21 @@ public class ProductividadKpiController {
 
     public ResponseEntity<ProductividadKPIDTO> obtenerMiKPI() {
         return ResponseEntity.ok(productividadKPIService.obtenerMiKPI());
+    }
+
+
+
+    /**
+     * KPI de un empleado especÃ­fico (Administrador / Empleado propio)
+     */
+    @GetMapping("/{empleadoId}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
+    public ResponseEntity<ProductividadKPIDTO> obtenerKPI(
+            @PathVariable Long empleadoId) {
+
+        return ResponseEntity.ok(
+                productividadKPIService.obtenerKPI(empleadoId)
+        );
     }
 
 }

@@ -3,7 +3,6 @@ package com.rrhh.dashboard.Objetivos.services;
 import com.rrhh.dashboard.Objetivos.Entity.Objetivo;
 import com.rrhh.dashboard.Objetivos.Entity.TipoObjetivo;
 import com.rrhh.dashboard.Objetivos.Repository.ObjetivoRepository;
-import com.rrhh.dashboard.Objetivos.dtos.ObjetivoProgresoResponse;
 import com.rrhh.dashboard.Objetivos.exceptions.DuplicateObjetivoException;
 import com.rrhh.dashboard.Objetivos.exceptions.InvalidObjetivoException;
 import com.rrhh.dashboard.Objetivos.exceptions.ObjetivoNotFoundException;
@@ -32,6 +31,10 @@ class ObjetivoServiceTest {
 
     private static final LocalDate LUNES = LocalDate.of(2026, 7, 6);
 
+    @BeforeEach
+    void setUp() {
+        service = new ObjetivoService(repository);
+    }
 
     @Test
     void crearGuardaElObjetivoConSemanaIndicada() {

@@ -3,7 +3,6 @@ package com.rrhh.dashboard.Objetivos.controllers;
 import com.rrhh.dashboard.Objetivos.Entity.Objetivo;
 import com.rrhh.dashboard.Objetivos.dtos.ActualizarObjetivoRequest;
 import com.rrhh.dashboard.Objetivos.dtos.CrearObjetivoRequest;
-import com.rrhh.dashboard.Objetivos.dtos.ObjetivoProgresoResponse;
 import com.rrhh.dashboard.Objetivos.dtos.ObjetivoResponse;
 import com.rrhh.dashboard.Objetivos.exceptions.ForbiddenObjetivoAccessException;
 import com.rrhh.dashboard.Objetivos.services.ObjetivoService;
@@ -62,7 +61,6 @@ public class ObjetivoController {
         requireOwnOrPrivileged(objetivo.getEmpleadoId());
         return ResponseEntity.ok(ObjetivoResponse.from(objetivo));
     }
-
 
     @GetMapping("/empleado/{empleadoId}")
     @PreAuthorize("hasAnyRole('EMPLEADO', 'ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR')")
