@@ -39,6 +39,7 @@ public class EmpleadoController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     public ResponseEntity<Empleados> crear(@Valid @RequestBody Empleados empleado) {
         Empleados nuevoEmpleado = service.guardar(empleado);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoEmpleado);
