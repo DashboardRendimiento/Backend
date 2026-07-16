@@ -1,4 +1,4 @@
-﻿package com.rrhh.dashboard.registro_productividad.Controllers;
+package com.rrhh.dashboard.registro_productividad.Controllers;
 
 
 import org.springframework.http.ResponseEntity;

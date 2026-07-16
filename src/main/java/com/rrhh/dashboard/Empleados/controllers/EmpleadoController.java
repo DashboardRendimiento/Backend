@@ -1,4 +1,4 @@
-﻿package com.rrhh.dashboard.Empleados.controllers;
+package com.rrhh.dashboard.Empleados.controllers;
 
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
 import com.rrhh.dashboard.Empleados.services.EmpleadoService;

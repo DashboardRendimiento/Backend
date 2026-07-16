@@ -1,4 +1,4 @@
-﻿package com.rrhh.dashboard.Empleados.Entity;
+package com.rrhh.dashboard.Empleados.Entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
