@@ -1,5 +1,6 @@
 package com.rrhh.dashboard.registro_productividad.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -29,8 +30,14 @@ public class ProductividadKPIService {
     private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final ObjetivoService objetivoService;
-    private final ProductivadPromedios promediosService;
 
+    LocalDate hoy = LocalDate.now();
+
+        LocalDate inicioSemana = hoy.with(DayOfWeek.MONDAY);
+        LocalDate finSemana = hoy.with(DayOfWeek.SUNDAY);
+
+        LocalDate inicioMes = hoy.withDayOfMonth(1);
+        LocalDate finMes = hoy.withDayOfMonth(hoy.lengthOfMonth());
 
     // ==================================================
     // OBTENER EMPLEADO AUTENTICADO

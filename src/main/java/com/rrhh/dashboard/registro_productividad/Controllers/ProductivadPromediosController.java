@@ -1,6 +1,7 @@
 package com.rrhh.dashboard.registro_productividad.Controllers;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -84,18 +85,28 @@ public class ProductivadPromediosController {
     /**
      * Promedio por hora de un empleado específico.
      */
-    @GetMapping("/{empleadoId}/hora")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
-    public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorHora(
-            @PathVariable Long empleadoId,
+   @GetMapping("/{empleadoId}/hora")
+        public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorHora(
+                @PathVariable Long empleadoId,
 
-            @RequestParam
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate inicio,
+                @RequestParam(required = false)
+                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                LocalDateTime inicio,
 
-            @RequestParam
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate fin) {
+                @RequestParam(required = false)
+                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                LocalDateTime fin) {
+
+
+        if (inicio == null) {
+                inicio = LocalDate.now()
+                        .atStartOfDay();
+        }
+
+        if (fin == null) {
+                fin = LocalDateTime.now();
+        }
+
 
         return ResponseEntity.ok(
                 productividadPromedios.obtenerPromedioPorHora(
@@ -104,5 +115,5 @@ public class ProductivadPromediosController {
                         fin
                 )
         );
-    }
+        }
 }
