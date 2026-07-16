@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version> <!-- Cambiar a una versión existente -->
+        <version>3.2.0</version> <!-- Cambiar a una versiÃƒÆ’Ã‚Â³n existente -->
         <relativePath/>
     </parent>
     
@@ -16,7 +16,7 @@
     <artifactId>dashboard</artifactId>
     <version>1.0.0</version>
     <name>Dashboard RRHH</name>
-    <description>API REST para Dashboard de Recursos Humanos - Depósito</description>
+    <description>API REST para Dashboard de Recursos Humanos - DepÃƒÆ’Ã‚Â³sito</description>
 
     <properties>
         <java.version>21</java.version>
@@ -92,7 +92,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.38</version>
+            <version>1.18.36</version>
             <optional>true</optional>
         </dependency>
         
@@ -121,19 +121,14 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.38</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.13.0</version>
+    <configuration>
+        
+        
+    </configuration>
+</plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -149,3 +144,5 @@
         </plugins>
     </build>
 </project>
+
+

@@ -12,10 +12,13 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/productividad/kpi")
-@RequiredArgsConstructor
 public class ProductividadKpiController {
 
     private final ProductividadKPIService productividadKPIService;
+    public ProductividadKpiController(ProductividadKPIService productividadKPIService) {
+        this.productividadKPIService = productividadKPIService;
+    }
+
 
     /**
      * KPI del usuario autenticado

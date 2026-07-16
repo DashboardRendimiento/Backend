@@ -17,10 +17,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/empleados") 
-@RequiredArgsConstructor
 public class EmpleadoController {
 
     private final EmpleadoService service;
+
+    public EmpleadoController(EmpleadoService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public ResponseEntity<List<Empleados>> listar() {

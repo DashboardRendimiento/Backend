@@ -11,10 +11,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/plantilla-horas")
-@RequiredArgsConstructor
 public class PlantillaHorasController {
 
     private final PlantillaHorasService service;
+    public PlantillaHorasController(PlantillaHorasService service) {
+        this.service = service;
+    }
+
 
     @PostMapping
     @PreAuthorize("hasAnyRole('SUPERADMIN','ADMINISTRADOR')")
@@ -23,11 +26,17 @@ public class PlantillaHorasController {
     }
 
     @GetMapping("/empleado/{empleadoId}")
-    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMINISTRADOR','SUPERVISOR','EMPLEADO')")
     public ResponseEntity<List<PlantillaHorasDTO>> obtenerPorMes(
             @PathVariable Long empleadoId,
             @RequestParam int year,
             @RequestParam int month) {
         return ResponseEntity.ok(service.obtenerPorEmpleadoYMes(empleadoId, year, month));
+    }
+
+    @GetMapping("/fecha/{fecha}")
+    @PreAuthorize("hasAnyRole('SUPERADMIN','ADMINISTRADOR','SUPERVISOR','EMPLEADO')")
+    public ResponseEntity<List<PlantillaHorasDTO>> obtenerPorFecha(@PathVariable String fecha) {
+        return ResponseEntity.ok(service.obtenerPorFecha(java.time.LocalDate.parse(fecha)));
     }
 }

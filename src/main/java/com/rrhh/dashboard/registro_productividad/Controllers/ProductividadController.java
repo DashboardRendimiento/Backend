@@ -1,4 +1,7 @@
 package com.rrhh.dashboard.registro_productividad.Controllers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import com.rrhh.dashboard.registro_productividad.Dtos.*;
 import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
@@ -14,11 +17,16 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/productividad")
-@RequiredArgsConstructor
 public class ProductividadController {
+    private static final Logger log = LoggerFactory.getLogger(ProductividadController.class);
+
 
 
     private final ProductividadService service;
+    public ProductividadController(ProductividadService service) {
+        this.service = service;
+    }
+
 
 
     @PostMapping
@@ -52,7 +60,7 @@ public class ProductividadController {
 
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<?> obtenerTodos(){
 
         return ResponseEntity.ok(
@@ -63,7 +71,7 @@ public class ProductividadController {
 
 
     @GetMapping("/empleado/{id}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<?> empleado(
             @PathVariable Long id){
 
@@ -87,7 +95,7 @@ public class ProductividadController {
 
 
     @GetMapping("/fecha")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<?> fecha(
             @RequestParam LocalDate fecha){
 

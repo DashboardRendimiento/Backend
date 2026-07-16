@@ -26,7 +26,7 @@ public class AuthService {
         Empleados empleado = empleadoRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(InvalidCredentialsException::new);
 
-        if (!empleado.isActive()) {
+        if (!empleado.getActive()) {
             throw new InvalidCredentialsException();
         }
         if (empleado.getPasswordHash() == null) {
@@ -39,3 +39,4 @@ public class AuthService {
         return jwtIssuer.issue(empleado.getId(), empleado.getRole());
     }
 }
+

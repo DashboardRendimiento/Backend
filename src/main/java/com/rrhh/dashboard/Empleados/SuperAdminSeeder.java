@@ -3,21 +3,18 @@ package com.rrhh.dashboard.Empleados;
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
 import com.rrhh.dashboard.Empleados.Entity.EmployeeRole;
 import com.rrhh.dashboard.Empleados.Repository.EmpleadoRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Solo el SUPERADMIN puede dar de alta empleados (ver EmpleadoController.crear), asi que sin
- * este seed no habria forma de crear el primero — mas aun con la base H2 en memoria, que se
- * vacia en cada reinicio del server.
- */
 @Component
-@Slf4j
 public class SuperAdminSeeder implements ApplicationRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(SuperAdminSeeder.class);
 
     private final EmpleadoRepository repository;
     private final PasswordEncoder passwordEncoder;
@@ -49,7 +46,7 @@ public class SuperAdminSeeder implements ApplicationRunner {
         superAdmin.setActive(true);
         repository.save(superAdmin);
 
-        log.warn("No habia ningun SUPERADMIN — se creo uno de arranque. email={} password={} " +
+        log.warn("No habia ningun SUPERADMIN, se creo uno de arranque. email={} password={} " +
                         "(configurable via app.superadmin.email / app.superadmin.password; cambiar en produccion)",
                 email, password);
     }

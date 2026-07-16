@@ -18,12 +18,17 @@ import java.util.Optional;
 import java.util.Random;
 
 @Service
-@RequiredArgsConstructor
 public class ExcelProcessingService {
 
     private final EmpleadoRepository empleadosRepository;
     private final ProductividadRepository productividadRepository;
     private final AsistenciaRepo asistenciaRepository;
+    public ExcelProcessingService(EmpleadoRepository empleadosRepository, ProductividadRepository productividadRepository, AsistenciaRepo asistenciaRepository) {
+        this.empleadosRepository = empleadosRepository;
+        this.productividadRepository = productividadRepository;
+        this.asistenciaRepository = asistenciaRepository;
+    }
+
 
     @Transactional
     public void processExcelData(List<ExcelRowDTO> excelRows) {

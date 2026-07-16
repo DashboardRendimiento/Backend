@@ -5,7 +5,8 @@ import com.rrhh.dashboard.registro_productividad.Entity.AsistenciaDiaria;
 import com.rrhh.dashboard.registro_productividad.repository.AsistenciaRepo;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,11 +17,15 @@ import java.util.Iterator;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class AsistenciaExcelService {
+    private static final Logger log = LoggerFactory.getLogger(AsistenciaExcelService.class);
+
     
     private final AsistenciaRepo asistenciaRepo;
+    public AsistenciaExcelService(AsistenciaRepo asistenciaRepo) {
+        this.asistenciaRepo = asistenciaRepo;
+    }
+
     
     public List<AsistenciaDiaria> procesarExcel(MultipartFile file) {
         List<AsistenciaDiaria> asistencias = new ArrayList<>();
@@ -71,16 +76,14 @@ public class AsistenciaExcelService {
         List<Empleados> empleados = asistenciaRepo.findByIdEmpleado(idEmpleado);
         Empleados empleado = !empleados.isEmpty() ? empleados.get(0) : null;
         
-        return AsistenciaDiaria.builder()
-            .idEmpleado(idEmpleado)
-            .nombre(nombre)
-            .estado(estado)
-            .fecha(LocalDate.now()) 
-            .horasTrabajadas(getDoubleValue(row.getCell(3))) 
-            .minutosTardanza(getIntegerValue(row.getCell(4)))
-            .horasExtra(getDoubleValue(row.getCell(5))) 
-            .empleado(empleado)
-            .build();
+        
+        AsistenciaDiaria ad = new AsistenciaDiaria();
+        ad.setIdEmpleado(idEmpleado);
+        ad.setNombre(nombre);
+        ad.setEstado(estado);
+        ad.setEmpleado(empleado);
+        return ad;
+
     }
     
     private String getStringValue(Cell cell) {

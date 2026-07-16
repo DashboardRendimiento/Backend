@@ -11,10 +11,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@RequiredArgsConstructor
 public class HealthController {
 
     private final ExcelDataService excelDataService;
+    public HealthController(ExcelDataService excelDataService) {
+        this.excelDataService = excelDataService;
+    }
+
 
     /**
      * Health check básico del sistema

@@ -19,12 +19,17 @@ import java.util.List;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class ProductividadService {
 
     private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final AttendanceRecordRepository attendanceRecordRepository;
+    public ProductividadService(ProductividadRepository repository, EmpleadoService empleadosService, AttendanceRecordRepository attendanceRecordRepository) {
+        this.repository = repository;
+        this.empleadosService = empleadosService;
+        this.attendanceRecordRepository = attendanceRecordRepository;
+    }
+
 
 
     private Empleados obtenerEmpleadoAutenticado() {

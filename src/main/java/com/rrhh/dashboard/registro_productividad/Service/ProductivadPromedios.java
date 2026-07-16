@@ -1,4 +1,7 @@
 package com.rrhh.dashboard.registro_productividad.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.time.Duration;
 import java.time.Instant;
@@ -25,11 +28,18 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class ProductivadPromedios {
+    private static final Logger log = LoggerFactory.getLogger(ProductivadPromedios.class);
+
       private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final AttendanceRecordRepository attendanceRepository;
+    public ProductivadPromedios(ProductividadRepository repository, EmpleadoService empleadosService, AttendanceRecordRepository attendanceRepository) {
+        this.repository = repository;
+        this.empleadosService = empleadosService;
+        this.attendanceRepository = attendanceRepository;
+    }
+
 
     private Empleados obtenerEmpleadoAutenticado() {
 
@@ -50,16 +60,16 @@ public class ProductivadPromedios {
         }
         
         Map<LocalDate, List<registro_productividad>> registrosPorFecha = registros.stream()
-                .collect(Collectors.groupingBy(registro_productividad::getFecha));
+                .collect(Collectors.groupingBy(r -> r.getFecha()));
         
         int totalJornadas = registrosPorFecha.size();
         
         int totalPedidos = registros.stream()
-                .mapToInt(registro_productividad::getPedidosPreparados)
+                .mapToInt(r -> r.getPedidosPreparados() == null ? 0 : r.getPedidosPreparados())
                 .sum();
         
         int totalBultos = registros.stream()
-                .mapToInt(registro_productividad::getBultosPreparados)
+                .mapToInt(r -> r.getBultosPreparados() == null ? 0 : r.getBultosPreparados())
                 .sum();
         
         double promedioPedidosPorJornada = totalJornadas > 0 ? (double) totalPedidos / totalJornadas : 0.0;
@@ -92,7 +102,7 @@ public class ProductivadPromedios {
         
         if (totalHoras == 0) {
             // Fallback: If no attendance records, assume 8 hours per worked day
-            totalHoras = registros.stream().map(registro_productividad::getFecha).distinct().count() * 8;
+            totalHoras = registros.stream().map(r -> r.getFecha()).distinct().count() * 8;
         }
         
         if (totalHoras == 0) {
@@ -100,11 +110,11 @@ public class ProductivadPromedios {
         }
         
         int totalPedidos = registros.stream()
-                .mapToInt(registro_productividad::getPedidosPreparados)
+                .mapToInt(r -> r.getPedidosPreparados() == null ? 0 : r.getPedidosPreparados())
                 .sum();
         
         int totalBultos = registros.stream()
-                .mapToInt(registro_productividad::getBultosPreparados)
+                .mapToInt(r -> r.getBultosPreparados() == null ? 0 : r.getBultosPreparados())
                 .sum();
         
         double promedioPedidosPorHora = (double) totalPedidos / totalHoras;
@@ -133,5 +143,6 @@ public class ProductivadPromedios {
         return obtenerPromedioPorHora(obtenerEmpleadoAutenticado().getId(), inicio, fin);
     }
 }
+
 
 

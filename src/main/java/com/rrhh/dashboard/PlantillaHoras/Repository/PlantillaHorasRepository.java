@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface PlantillaHorasRepository extends JpaRepository<PlantillaHoras, Long> {
     Optional<PlantillaHoras> findByEmpleadoIdAndFecha(Long empleadoId, LocalDate fecha);
     List<PlantillaHoras> findByEmpleadoIdAndFechaBetween(Long empleadoId, LocalDate startDate, LocalDate endDate);
+    List<PlantillaHoras> findByFecha(LocalDate fecha);
 }

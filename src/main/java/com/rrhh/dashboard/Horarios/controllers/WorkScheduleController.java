@@ -67,7 +67,7 @@ public class WorkScheduleController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERADMIN', 'SUPERVISOR', 'EMPLEADO')")
     public ResponseEntity<WorkScheduleResponse> getByEmployee(@PathVariable Long employeeId) {
         return ResponseEntity.ok(WorkScheduleResponse.from(workScheduleService.getByEmployee(employeeId)));
     }

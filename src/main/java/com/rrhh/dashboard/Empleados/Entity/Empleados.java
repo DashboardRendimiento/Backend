@@ -18,9 +18,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "empleados")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Empleados {
 
     @Id
@@ -59,4 +56,29 @@ public class Empleados {
         this.turno = turno;
     }
 
+
+    public Empleados() {}
+    public Long getId() { return this.id; }
+    public void setId(Long id) { this.id = id; }
+    public String getNombre() { return this.nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getApellido() { return this.apellido; }
+    public void setApellido(String apellido) { this.apellido = apellido; }
+    public Long getDni() { return this.dni; }
+    public void setDni(Long dni) { this.dni = dni; }
+    public String getSector() { return this.sector; }
+    public void setSector(String sector) { this.sector = sector; }
+    public String getPuesto() { return this.puesto; }
+    public void setPuesto(String puesto) { this.puesto = puesto; }
+    public String getTurno() { return this.turno; }
+    public String getEmail() { return this.email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPasswordHash() { return this.passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public EmployeeRole getRole() { return this.role; }
+    public void setRole(EmployeeRole role) { this.role = role; }
+    public boolean getActive() { return this.active; }
+    public void setActive(boolean active) { this.active = active; }
+    public byte[] getFotoReferencia() { return this.fotoReferencia; }
+    public void setFotoReferencia(byte[] fotoReferencia) { this.fotoReferencia = fotoReferencia; }
 }

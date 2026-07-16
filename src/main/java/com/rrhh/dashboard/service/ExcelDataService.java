@@ -5,7 +5,8 @@ import com.rrhh.dashboard.Migracion.Dtos.AsistenciaDiariaDTO;
 import com.rrhh.dashboard.Migracion.Dtos.ResumenKpiDTO;
 import com.rrhh.dashboard.registro_productividad.Dtos.ProductividadDiariaDTO;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +21,9 @@ import java.time.ZoneId;
 import java.util.*;
 
 @Service
-@Slf4j
 public class ExcelDataService {
+    private static final Logger log = LoggerFactory.getLogger(ExcelDataService.class);
+
 
     @Value("${app.excel.file}")
     private Resource excelFile;

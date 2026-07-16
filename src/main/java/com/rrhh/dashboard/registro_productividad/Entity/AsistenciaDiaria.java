@@ -19,10 +19,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "asistencia_diaria")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class AsistenciaDiaria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,4 +56,26 @@ public class AsistenciaDiaria {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'save'");
     }
+
+    public AsistenciaDiaria() {}
+    public Long getId() { return this.id; }
+    public void setId(Long id) { this.id = id; }
+    public LocalDate getFecha() { return this.fecha; }
+    public void setFecha(LocalDate fecha) { this.fecha = fecha; }
+    public String getIdEmpleado() { return this.idEmpleado; }
+    public void setIdEmpleado(String idEmpleado) { this.idEmpleado = idEmpleado; }
+    public String getNombre() { return this.nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getEstado() { return this.estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+    public Double getHorasTrabajadas() { return this.horasTrabajadas; }
+    public void setHorasTrabajadas(Double horasTrabajadas) { this.horasTrabajadas = horasTrabajadas; }
+    public Integer getMinutosTardanza() { return this.minutosTardanza; }
+    public void setMinutosTardanza(Integer minutosTardanza) { this.minutosTardanza = minutosTardanza; }
+    public Double getHorasExtra() { return this.horasExtra; }
+    public void setHorasExtra(Double horasExtra) { this.horasExtra = horasExtra; }
+    public LocalDateTime getFechaCarga() { return this.fechaCarga; }
+    public void setFechaCarga(LocalDateTime fechaCarga) { this.fechaCarga = fechaCarga; }
+    public Empleados getEmpleado() { return this.empleado; }
+    public void setEmpleado(Empleados empleado) { this.empleado = empleado; }
 }

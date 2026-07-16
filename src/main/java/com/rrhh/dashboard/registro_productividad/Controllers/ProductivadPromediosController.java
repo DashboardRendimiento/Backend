@@ -14,10 +14,13 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/productividad/promedios")
-@RequiredArgsConstructor
 public class ProductivadPromediosController {
 
     private final ProductivadPromedios productividadPromedios;
+    public ProductivadPromediosController(ProductivadPromedios productividadPromedios) {
+        this.productividadPromedios = productividadPromedios;
+    }
+
 
     /**
      * Promedio por jornada del usuario autenticado.
@@ -58,10 +61,10 @@ public class ProductivadPromediosController {
     }
 
     /**
-     * Promedio por jornada de un empleado específico.
+     * Promedio por jornada de un empleado especÃ­fico.
      */
     @GetMapping("/{empleadoId}/jornada")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN','SUPERADMIN')")
     public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorJornada(
             @PathVariable Long empleadoId,
 
@@ -83,10 +86,10 @@ public class ProductivadPromediosController {
     }
 
     /**
-     * Promedio por hora de un empleado específico.
+     * Promedio por hora de un empleado especÃ­fico.
      */
     @GetMapping("/{empleadoId}/hora")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN','SUPERADMIN')")
     public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorHora(
             @PathVariable Long empleadoId,
 

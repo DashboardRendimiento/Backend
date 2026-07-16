@@ -18,11 +18,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/excel")
-@RequiredArgsConstructor
 public class ExcelController {
 
     private final ExcelImportService excelImportService;
     private final ExcelProcessingService excelProcessingService;
+    public ExcelController(ExcelImportService excelImportService, ExcelProcessingService excelProcessingService) {
+        this.excelImportService = excelImportService;
+        this.excelProcessingService = excelProcessingService;
+    }
+
 
     @PostMapping("/import")
     public ResponseEntity<Map<String, Object>> importExcel(@RequestParam("file") MultipartFile file) {
