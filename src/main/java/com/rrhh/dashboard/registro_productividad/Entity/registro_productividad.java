@@ -3,8 +3,11 @@ package com.rrhh.dashboard.registro_productividad.Entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.rrhh.dashboard.Asistencia.Entity.AttendanceRecord;
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,8 +40,12 @@ public class registro_productividad {
     @Column(name="fechaHora")
     private LocalDateTime fechaHora;
 
+    @CreationTimestamp
+    private LocalDateTime fechaCarga;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attendance_id", nullable = false)
+    @JsonIgnore
     private AttendanceRecord asistencia;
         
     @ManyToOne
@@ -46,3 +53,4 @@ public class registro_productividad {
     private Empleados empleado;
 
 }
+

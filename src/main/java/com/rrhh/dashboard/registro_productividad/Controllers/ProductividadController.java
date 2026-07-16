@@ -22,7 +22,7 @@ public class ProductividadController {
 
 
     @PostMapping
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('EMPLEADO','SUPERVISOR')")
     public ResponseEntity<?> guardar(
             @RequestBody ProductividadDiariaDTO dto){
 
@@ -41,9 +41,8 @@ public class ProductividadController {
                 dto.getBultosPreparados()
         );
 
-
         return ResponseEntity.ok(
-                service.guardar(productividad)
+                service.guardar(productividad, dto.getEmpleado())
         );
     }
 
@@ -85,8 +84,7 @@ public class ProductividadController {
 
 
     @GetMapping("/fecha")
-        @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
-
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     public ResponseEntity<?> fecha(
             @RequestParam LocalDate fecha){
 

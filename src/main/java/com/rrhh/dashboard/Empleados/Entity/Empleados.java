@@ -12,6 +12,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,41 +26,67 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Empleados {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name="nombre")
+
+    @NotBlank(message = "El nombre no puede estar vacÃ­o")
+    @Size(min = 2, max = 50, message = "El nombre debe tener entre 2 y 50 caracteres")
+    @Column(name = "nombre", nullable = false)
     private String nombre;
-    @Column (name ="apellido")
+
+    @NotBlank(message = "El apellido no puede estar vacÃ­o")
+    @Size(min = 2, max = 50, message = "El apellido debe tener entre 2 y 50 caracteres")
+    @Column(name = "apellido", nullable = false)
     private String apellido;
-    @Column (name = "dni")
+
+    @NotNull(message = "El DNI no puede ser nulo")
+    @Column(name = "dni", unique = true, nullable = false)
     private Long dni;
-    @Column ( name="sector")
+
+    @NotBlank(message = "El sector no puede estar vacÃ­o")
+    @Column(name = "sector", nullable = false)
     private String sector;
-    @Column (name="puesto")
+
+    @NotBlank(message = "El puesto no puede estar vacÃ­o")
+    @Column(name = "puesto", nullable = false)
     private String puesto;
-    @Column (name="turno")
+
+    @NotBlank(message = "El turno no puede estar vacÃ­o")
+    @Column(name = "turno", nullable = false)
     private String turno;
-    @Column(name = "email", unique = true)
+
+    @NotBlank(message = "El email no puede estar vacÃ­o")
+    @Email(message = "El email debe tener un formato vÃ¡lido")
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
+
+    @NotBlank(message = "La contraseÃ±a no puede estar vacÃ­a")
+    @Size(min = 6, message = "La contraseÃ±a debe tener al menos 6 caracteres")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @Column(name = "password_hash")
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
+    @Column(name = "role", nullable = false)
     private EmployeeRole role = EmployeeRole.EMPLEADO;
-    @Column(name = "active")
+
+    @Column(name = "active", nullable = false)
     private boolean active = true;
+
+
+    // MÃ©todos existentes
+
     @JsonIgnore
     @Lob
     @Column(name = "foto_referencia")
     private byte[] fotoReferencia;
+
     public void setIdEmpleado(int idEmpleado) {
-    this.id = (long) idEmpleado;
-    }
-    public void setTurno(String turno){
-        this.turno = turno;
+        this.id = (long) idEmpleado;
     }
 
+    public void setTurno(String turno) {
+        this.turno = turno;
+    }
 }

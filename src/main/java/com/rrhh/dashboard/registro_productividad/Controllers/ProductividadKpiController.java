@@ -27,4 +27,19 @@ public class ProductividadKpiController {
         return ResponseEntity.ok(productividadKPIService.obtenerMiKPI());
     }
 
+
+
+    /**
+     * KPI de un empleado especÃ­fico (Administrador / Empleado propio)
+     */
+    @GetMapping("/{empleadoId}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
+    public ResponseEntity<ProductividadKPIDTO> obtenerKPI(
+            @PathVariable Long empleadoId) {
+
+        return ResponseEntity.ok(
+                productividadKPIService.obtenerKPI(empleadoId)
+        );
+    }
+
 }
