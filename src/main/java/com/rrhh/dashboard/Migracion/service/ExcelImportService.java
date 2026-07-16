@@ -326,8 +326,8 @@ public class ExcelImportService {
     private void mergeResumenData(List<ExcelRowDTO> mainRows, List<ExcelRowDTO> resumenRows) {
         for (ExcelRowDTO main : mainRows) {
             for (ExcelRowDTO resumen : resumenRows) {
-                if (main.getIdEmpleado() != null && resumen.getIdEmpleado() != null &&
-                    main.getIdEmpleado().equals(resumen.getIdEmpleado())) {
+                if (main.getDni() != null && resumen.getDni() != null &&
+                    main.getDni().equals(resumen.getDni())) {
                     
                     if (main.getPuesto() == null) main.setPuesto(resumen.getPuesto());
                     if (main.getTurno() == null) main.setTurno(resumen.getTurno());
@@ -340,8 +340,8 @@ public class ExcelImportService {
     private void mergeProductividadData(List<ExcelRowDTO> mainRows, List<ExcelRowDTO> productividadRows) {
         for (ExcelRowDTO main : mainRows) {
             for (ExcelRowDTO prod : productividadRows) {
-                if (main.getIdEmpleado() != null && prod.getIdEmpleado() != null &&
-                    main.getIdEmpleado().equals(prod.getIdEmpleado())) {
+                if (main.getDni() != null && prod.getDni() != null &&
+                    main.getDni().equals(prod.getDni())) {
                     
                     main.setBultosPreparados(prod.getBultosPreparados());
                     main.setPedidosPreparados(prod.getPedidosPreparados());
@@ -355,8 +355,8 @@ public class ExcelImportService {
     private void mergeAsistenciaData(List<ExcelRowDTO> mainRows, List<ExcelRowDTO> asistenciaRows) {
         for (ExcelRowDTO main : mainRows) {
             for (ExcelRowDTO asis : asistenciaRows) {
-                if (main.getIdEmpleado() != null && asis.getIdEmpleado() != null &&
-                    main.getIdEmpleado().equals(asis.getIdEmpleado())) {
+                if (main.getDni() != null && asis.getDni() != null &&
+                    main.getDni().equals(asis.getDni())) {
                     
                     main.setEstado(asis.getEstado());
                     main.setMinutosTardanza(asis.getMinutosTardanza());

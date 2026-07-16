@@ -11,8 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * Solo el SUPERADMIN puede dar de alta empleados (ver EmpleadoController.crear),
- * por lo que este seeder crea el primer SUPERADMIN si la base está vacía.
+ * Solo el SUPERADMIN puede dar de alta empleados (ver EmpleadoController.crear), asi que sin
+ * este seed no habria forma de crear el primero — mas aun con la base H2 en memoria, que se
+ * vacia en cada reinicio del server.
  */
 @Component
 @Slf4j
@@ -23,12 +24,10 @@ public class SuperAdminSeeder implements ApplicationRunner {
     private final String email;
     private final String password;
 
-    public SuperAdminSeeder(
-            EmpleadoRepository repository,
-            PasswordEncoder passwordEncoder,
-            @Value("${app.superadmin.email:superadmin@example.com}") String email,
-            @Value("${app.superadmin.password:changeme}") String password) {
-
+    public SuperAdminSeeder(EmpleadoRepository repository,
+                             PasswordEncoder passwordEncoder,
+                             @Value("${app.superadmin.email:superadmin@example.com}") String email,
+                             @Value("${app.superadmin.password:changeme}") String password) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.email = email;
@@ -37,7 +36,6 @@ public class SuperAdminSeeder implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-
         if (repository.existsByRole(EmployeeRole.SUPERADMIN)) {
             return;
         }
@@ -45,21 +43,14 @@ public class SuperAdminSeeder implements ApplicationRunner {
         Empleados superAdmin = new Empleados();
         superAdmin.setNombre("Super");
         superAdmin.setApellido("Admin");
-        superAdmin.setDni(99999999L);              
-        superAdmin.setSector("Administración");
-        superAdmin.setPuesto("Super Administrador");
-        superAdmin.setTurno("Mañana");
-
         superAdmin.setEmail(email);
         superAdmin.setPasswordHash(passwordEncoder.encode(password));
         superAdmin.setRole(EmployeeRole.SUPERADMIN);
         superAdmin.setActive(true);
-
         repository.save(superAdmin);
 
-        log.warn(
-                "No había ningún SUPERADMIN. Se creó uno automáticamente. Email: {}",
-                email
-        );
+        log.warn("No habia ningun SUPERADMIN — se creo uno de arranque. email={} password={} " +
+                        "(configurable via app.superadmin.email / app.superadmin.password; cambiar en produccion)",
+                email, password);
     }
 }

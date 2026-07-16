@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class PromedioProductividadDTO {
     private double promedioPedidos;
     private double promedioBultos;
-    private double totalJornadasOHoras; // Total de jornadas u horas consideradas
+    private long totalJornadasOHoras; // Total de jornadas u horas consideradas
     
     // Constructor específico para cuando solo necesitamos el promedio
     public PromedioProductividadDTO(double promedioPedidos, double promedioBultos) {

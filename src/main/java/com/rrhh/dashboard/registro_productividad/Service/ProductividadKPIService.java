@@ -2,6 +2,7 @@ package com.rrhh.dashboard.registro_productividad.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,159 +18,259 @@ import com.rrhh.dashboard.registro_productividad.Dtos.ProductividadKPIDTO;
 import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
 import com.rrhh.dashboard.registro_productividad.repository.ProductividadRepository;
 
-import com.rrhh.dashboard.registro_productividad.Service.ProductivadPromedios;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class ProductividadKPIService {
-     private final ProductividadRepository repository;
+
+
+    private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final ObjetivoService objetivoService;
     private final ProductivadPromedios promediosService;
 
 
+    // ==================================================
+    // OBTENER EMPLEADO AUTENTICADO
+    // ==================================================
+
     private Empleados obtenerEmpleadoAutenticado() {
 
         Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+                SecurityContextHolder
+                .getContext()
+                .getAuthentication();
 
-        Long empleadoId = Long.valueOf(authentication.getName());
+
+        Long empleadoId =
+                Long.valueOf(authentication.getName());
+
 
         return empleadosService.buscarPorId(empleadoId)
                 .orElseThrow(() ->
-                        new RuntimeException("Empleado no encontrado con id: " + empleadoId));
+                        new RuntimeException(
+                                "Empleado no encontrado con id: "
+                                + empleadoId
+                        )
+                );
     }
 
-    //KPIS POR USUARIO AUTENTICADO
+
+
+    // ==================================================
+    // KPI USUARIO LOGUEADO
+    // ==================================================
+
     public ProductividadKPIDTO obtenerMiKPI() {
 
-        return obtenerKPI(obtenerEmpleadoAutenticado().getId());
+        return obtenerKPI(
+                obtenerEmpleadoAutenticado().getId()
+        );
     }
 
 
+
+    // ==================================================
+    // KPI POR EMPLEADO
+    // ==================================================
+
     public ProductividadKPIDTO obtenerKPI(Long empleadoId) {
-        // ==========================
-        // KPI HISTÓRIAL
-        // ==========================
+
+
+        ProductividadKPIDTO kpi =
+                new ProductividadKPIDTO();
+
+
+
+        // ==================================================
+        // KPI HISTORIAL
+        // ==================================================
 
         List<registro_productividad> data =
                 repository.findByEmpleadoId(empleadoId);
-        ProductividadKPIDTO kpi =
-                new ProductividadKPIDTO();
+
+
+
         int totalPedidos =
                 data.stream()
-                        .mapToInt(
-                            registro_productividad::getPedidosPreparados
-                        )
-                        .sum();
-        int totalBultos =
-                data.stream()
-                        .mapToInt(
-                            registro_productividad::getBultosPreparados
-                        )
-                        .sum();
+                .mapToInt(
+                    registro_productividad::getPedidosPreparados
+                )
+                .sum();
+
+
 
         kpi.setTotalPedidos(totalPedidos);
 
-        kpi.setTotalBultos(totalBultos);
 
-        // ==========================
-        // PROMEDIOS (Históricos o del mes actual)
-        // ==========================
-        LocalDate hoy = LocalDate.now();
-        LocalDate inicioMes = hoy.withDayOfMonth(1);
-        LocalDate finMes = hoy.withDayOfMonth(hoy.lengthOfMonth());
-        
-        // Usamos los últimos 30 días para un promedio más representativo
-        LocalDate inicio30Dias = hoy.minusDays(30);
 
-        try {
-            var promediosHora = promediosService.obtenerPromedioPorHora(empleadoId, inicio30Dias, hoy);
-            kpi.setPedidosPorHora(promediosHora.getPromedioPedidos());
-            kpi.setBultosPorHora(promediosHora.getPromedioBultos());
+        LocalDate hoy =
+                LocalDate.now();
 
-            var promediosJornada = promediosService.obtenerPromedioPorJornada(empleadoId, inicio30Dias, hoy);
-            kpi.setPromedioPedidosPorJornada(promediosJornada.getPromedioPedidos());
-            kpi.setPromedioBultosPorJornada(promediosJornada.getPromedioBultos());
-        } catch(Exception e) {
-            kpi.setPedidosPorHora(0.0);
-            kpi.setBultosPorHora(0.0);
-            kpi.setPromedioPedidosPorJornada(0.0);
-            kpi.setPromedioBultosPorJornada(0.0);
-        }
 
-        // ==========================
-        // OBJETIVO SEMANAL
-        // ==========================
 
-        LocalDate inicioSemana =
-                obtenerInicioSemana(hoy);
+        // ==================================================
+        // KPI DEL DÍA ACTUAL
+        // SI NO EXISTE BUSCA EL ÚLTIMO DÍA DISPONIBLE
+        // ==================================================
 
-        LocalDate finSemana =
-                obtenerFinSemana(hoy);
-
-        List<registro_productividad> registrosSemana =
-                repository.findByEmpleadoIdAndFechaBetween(
+        List<registro_productividad> registrosDia =
+                repository.findByEmpleadoIdAndFecha(
                         empleadoId,
-                        inicioSemana,
-                        finSemana
-                );
-        int pedidosSemana =
-                registrosSemana.stream()
-                        .mapToInt(
-                            registro_productividad::getPedidosPreparados
-                        )
-                        .sum();
-
-        Objetivo objetivoPedidos =
-                objetivoService.obtenerObjetivoActual(
-                        empleadoId,
-                        TipoObjetivo.PEDIDOS,
                         hoy
                 );
 
-        if(objetivoPedidos != null){
-            double objetivo =
-                    objetivoPedidos.getValorSemanal();
+
+
+        LocalDate fechaUtilizada = hoy;
+
+
+
+        /*
+         * Si hoy no tiene registros,
+         * buscar el último registro anterior
+         */
+        if (registrosDia.isEmpty()) {
+
+
+            Optional<registro_productividad> ultimoRegistro =
+
+                    repository
+                    .findTopByEmpleadoIdAndFechaLessThanEqualOrderByFechaDesc(
+                            empleadoId,
+                            hoy.minusDays(1)
+                    );
+
+
+
+            if (ultimoRegistro.isPresent()) {
+
+
+                registro_productividad registro =
+                        ultimoRegistro.get();
+
+
+                registrosDia =
+                        List.of(registro);
+
+
+                fechaUtilizada =
+                        registro.getFecha();
+
+            }
+
+        }
+
+
+
+        // ==================================================
+        // PEDIDOS DEL DÍA UTILIZADO
+        // ==================================================
+
+        int pedidosDia =
+
+                registrosDia.stream()
+                .mapToInt(
+                    registro_productividad::getPedidosPreparados
+                )
+                .sum();
+
+
+
+        /*
+         * Opcional:
+         * si agregas fechaReferencia en el DTO
+         */
+        // kpi.setFechaReferencia(fechaUtilizada);
+
+
+
+        // ==================================================
+        // OBJETIVO DIARIO
+        // ==================================================
+
+        Objetivo objetivoPedidos =
+
+                objetivoService.obtenerObjetivoActual(
+                        empleadoId,
+                        TipoObjetivo.PEDIDOS,
+                        fechaUtilizada
+                );
+
+
+
+        if (objetivoPedidos != null) {
+
+
+            double objetivoDiario =
+                    objetivoPedidos.getValorDiario();
+
+
 
             double pendiente =
-                    objetivo - pedidosSemana;
 
-            if(pendiente < 0){
+                    objetivoDiario - pedidosDia;
+
+
+
+            if (pendiente < 0) {
                 pendiente = 0;
             }
 
+
+
             kpi.setObjetivoPedidos(
-                    objetivo
+                    objetivoDiario
             );
+
+
 
             kpi.setPedidosPendientesObjetivo(
                     pendiente
             );
 
-            kpi.setPorcentajeCumplimiento(
-                    (pedidosSemana / objetivo) * 100
-            );
+
+
+            if (objetivoDiario > 0) {
+
+
+                double porcentaje =
+
+                        (pedidosDia * 100.0)
+                        /
+                        objetivoDiario;
+
+
+
+                kpi.setPorcentajeCumplimiento(
+                        porcentaje
+                );
+
+            }
+
         }
+
+
 
         return kpi;
     }
 
-//==============================================
-//=========METODOS AUXILIARES===================
-//===============================================
-private LocalDate obtenerInicioSemana(LocalDate fecha) {
-    return fecha.minusDays(
-            fecha.getDayOfWeek().getValue() - 1
-    );
-}
 
 
-private LocalDate obtenerFinSemana(LocalDate fecha) {
-    return obtenerInicioSemana(fecha)
-            .plusDays(5);
-}
+
+    // ==================================================
+    // METODOS AUXILIARES
+    // ==================================================
+
+    private LocalDate obtenerInicioSemana(LocalDate fecha) {
+
+        return fecha.minusDays(
+                fecha.getDayOfWeek()
+                .getValue() - 1
+        );
+    }
+
+
 }

@@ -42,7 +42,7 @@ public class ProductividadController {
         );
 
         return ResponseEntity.ok(
-                service.guardar(productividad, dto.getEmpleado())
+                service.guardar(productividad)
         );
     }
 
