@@ -6,9 +6,11 @@ import com.rrhh.dashboard.Asistencia.exceptions.NoOpenAttendanceRecordException;
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
 import com.rrhh.dashboard.Empleados.services.EmpleadoService;
 import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
+import com.rrhh.dashboard.registro_productividad.events.ProductividadRegistradaEvent;
 import com.rrhh.dashboard.registro_productividad.repository.ProductividadRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class ProductividadService {
     private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final AttendanceRecordRepository attendanceRecordRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     private Empleados obtenerEmpleadoAutenticado() {
@@ -65,7 +68,9 @@ public class ProductividadService {
                 .orElseThrow(() -> new NoOpenAttendanceRecordException(empleadoAsignado.getId()));
         productividad.setAsistencia(asistenciaAbierta);
 
-        return repository.save(productividad);
+        registro_productividad guardado = repository.save(productividad);
+        eventPublisher.publishEvent(new ProductividadRegistradaEvent(empleadoAsignado.getId()));
+        return guardado;
     }
 
     // ==========================
