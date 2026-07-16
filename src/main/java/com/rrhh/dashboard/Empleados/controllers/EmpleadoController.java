@@ -25,7 +25,7 @@ public class EmpleadoController {
     private final EmpleadoService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<List<Empleados>> listar() {
         List<Empleados> empleados = service.listar();
         if (empleados.isEmpty()) {
@@ -35,7 +35,7 @@ public class EmpleadoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('EMPLEADO, ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('EMPLEADO','ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<Empleados> obtenerPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
                 .map(ResponseEntity::ok)
@@ -93,7 +93,7 @@ public class EmpleadoController {
     }
 
     @PutMapping("/{id}")     
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<Empleados> actualizar(
             @PathVariable Long id, 
             @Valid @RequestBody Empleados empleado) {
@@ -102,63 +102,63 @@ public class EmpleadoController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/sector/{sector}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<List<Empleados>> buscarPorSector(@PathVariable String sector) {
         List<Empleados> empleados = service.buscarPorSector(sector);
         return ResponseEntity.ok(empleados);
     }
 
     @GetMapping("/puesto/{puesto}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<List<Empleados>> buscarPorPuesto(@PathVariable String puesto) {
         List<Empleados> empleados = service.buscarPorPuesto(puesto);
         return ResponseEntity.ok(empleados);
     }
 
     @GetMapping("/contar/sector/{sector}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<Map<String, Long>> contarPorSector(@PathVariable String sector) {
         Long cantidad = service.contarPorSector(sector);
         return ResponseEntity.ok(Map.of("cantidad", cantidad));
     }
 
     @GetMapping("/contar/puesto/{puesto}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<Map<String, Long>> contarPorPuesto(@PathVariable String puesto) {
         Long cantidad = service.contarPorPuesto(puesto);
         return ResponseEntity.ok(Map.of("cantidad", cantidad));
     }
 
     @GetMapping("/total")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<Map<String, Long>> totalEmpleados() {
         Long total = service.totalEmpleados();
         return ResponseEntity.ok(Map.of("total", total));
     }
 
     @GetMapping("/buscar/dni/{dni}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<List<Empleados>> buscarPorDni(@PathVariable Long dni) {
         List<Empleados> empleados = service.buscarPorDni(dni);
         return ResponseEntity.ok(empleados);
     }
 
     @GetMapping("/buscar/nombre/{nombre}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<List<Empleados>> buscarPorNombre(@PathVariable String nombre) {
         List<Empleados> empleados = service.buscarPorNombre(nombre);
         return ResponseEntity.ok(empleados);
     }
 
     @GetMapping("/buscar/apellido/{apellido}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<List<Empleados>> buscarPorApellido(@PathVariable String apellido) {
         List<Empleados> empleados = service.buscarPorApellido(apellido);
         return ResponseEntity.ok(empleados);

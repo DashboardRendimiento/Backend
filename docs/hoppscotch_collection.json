@@ -1,0 +1,581 @@
+{
+  "info": {
+    "_postman_id": "b6f2b8a0-0a1a-4a2a-9a1a-dashboard-rrhh",
+    "name": "Dashboard RRHH - Backend",
+    "description": "Coleccion para probar la API manualmente. Importar en Hoppscotch con 'Import > Postman Collection'.\n\nFlujo recomendado:\n1. Correr 'Auth > Login' (guarda el JWT solo en la variable de coleccion `jwt`).\n2. El resto de los requests ya usan ese `jwt` automaticamente (auth heredado de la coleccion).\n3. Actualizar `empleadoId` / `attendanceId` / `objetivoId` / `workScheduleId` con los ids reales que te devuelvan los POST de alta.\n\nEl WebSocket (STOMP) no entra en esta coleccion -- Hoppscotch no tiene cliente STOMP nativo. Ver README/MANUAL_USUARIO para probarlo a mano (Postman soporta STOMP, o un WebSocket crudo mandando los frames de texto).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{jwt}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "jwt", "value": "" },
+    { "key": "empleadoId", "value": "1" },
+    { "key": "attendanceId", "value": "1" },
+    { "key": "objetivoId", "value": "1" },
+    { "key": "workScheduleId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Salud",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/health", "host": ["{{baseUrl}}"], "path": ["api", "health"] }
+          }
+        },
+        {
+          "name": "Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/info", "host": ["{{baseUrl}}"], "path": ["api", "info"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt', json.token);",
+                  "    console.log('JWT guardado en la variable de coleccion jwt');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@example.com\",\n  \"password\": \"changeme\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "description": "Login de cualquier empleado (o el SUPERADMIN seed). Guarda el token en {{jwt}} automaticamente."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Empleados",
+      "item": [
+        {
+          "name": "Listar (ADMINISTRADOR/SUPERVISOR)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados", "host": ["{{baseUrl}}"], "path": ["api", "empleados"] }
+          }
+        },
+        {
+          "name": "Obtener por id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/empleados/{{empleadoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "empleados", "{{empleadoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Mi perfil (me)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados/me", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "me"] }
+          }
+        },
+        {
+          "name": "Crear (solo SUPERADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "empleado",
+                  "value": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Test\",\n  \"dni\": 12345678,\n  \"sector\": \"Deposito\",\n  \"puesto\": \"Operaria\",\n  \"turno\": \"Manana\",\n  \"email\": \"ana.test@example.com\",\n  \"passwordHash\": \"clave123\"\n}",
+                  "type": "text",
+                  "contentType": "application/json"
+                },
+                { "key": "foto", "type": "file", "src": [], "disabled": true }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/api/empleados", "host": ["{{baseUrl}}"], "path": ["api", "empleados"] },
+            "description": "'foto' es opcional (verificacion facial). El campo 'passwordHash' recibe la contrasena en texto plano, el backend la hashea."
+          }
+        },
+        {
+          "name": "Subir mi foto (me/foto)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "foto", "type": "file", "src": [] }]
+            },
+            "url": { "raw": "{{baseUrl}}/api/empleados/me/foto", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "me", "foto"] }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Test\",\n  \"sector\": \"Deposito\",\n  \"puesto\": \"Operaria Senior\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/empleados/{{empleadoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "empleados", "{{empleadoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/empleados/{{empleadoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "empleados", "{{empleadoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Buscar por sector",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados/sector/Deposito", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "sector", "Deposito"] }
+          }
+        },
+        {
+          "name": "Buscar por puesto",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados/puesto/Operaria", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "puesto", "Operaria"] }
+          }
+        },
+        {
+          "name": "Buscar por DNI",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados/buscar/dni/12345678", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "buscar", "dni", "12345678"] }
+          }
+        },
+        {
+          "name": "Buscar por nombre",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados/buscar/nombre/Ana", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "buscar", "nombre", "Ana"] }
+          }
+        },
+        {
+          "name": "Buscar por apellido",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados/buscar/apellido/Test", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "buscar", "apellido", "Test"] }
+          }
+        },
+        {
+          "name": "Contar por sector",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados/contar/sector/Deposito", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "contar", "sector", "Deposito"] }
+          }
+        },
+        {
+          "name": "Contar por puesto",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados/contar/puesto/Operaria", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "contar", "puesto", "Operaria"] }
+          }
+        },
+        {
+          "name": "Total de empleados",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/empleados/total", "host": ["{{baseUrl}}"], "path": ["api", "empleados", "total"] }
+          }
+        },
+        {
+          "name": "Foto de referencia",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/empleados/{{empleadoId}}/foto",
+              "host": ["{{baseUrl}}"], "path": ["api", "empleados", "{{empleadoId}}", "foto"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Asistencia",
+      "item": [
+        {
+          "name": "Fichaje de entrada (clock-in)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "foto", "type": "file", "src": [], "disabled": true }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/attendance/{{empleadoId}}/clock-in",
+              "host": ["{{baseUrl}}"], "path": ["api", "attendance", "{{empleadoId}}", "clock-in"]
+            },
+            "description": "'foto' es opcional. Sin ella o sin match suficiente, el fichaje queda PENDIENTE_REVISION (nunca bloquea)."
+          }
+        },
+        {
+          "name": "Fichaje de salida (clock-out)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/attendance/{{empleadoId}}/clock-out",
+              "host": ["{{baseUrl}}"], "path": ["api", "attendance", "{{empleadoId}}", "clock-out"]
+            }
+          }
+        },
+        {
+          "name": "Listar todos (ADMIN/SUPERVISOR)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/attendance", "host": ["{{baseUrl}}"], "path": ["api", "attendance"] }
+          }
+        },
+        {
+          "name": "Listar por empleado",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/attendance/empleado/{{empleadoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "attendance", "empleado", "{{empleadoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Pendientes de revision",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/attendance/pendientes", "host": ["{{baseUrl}}"], "path": ["api", "attendance", "pendientes"] }
+          }
+        },
+        {
+          "name": "Foto del fichaje",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/attendance/{{attendanceId}}/foto",
+              "host": ["{{baseUrl}}"], "path": ["api", "attendance", "{{attendanceId}}", "foto"]
+            }
+          }
+        },
+        {
+          "name": "Revisar fichaje pendiente",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"aprobado\": true\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/attendance/{{attendanceId}}/revisar",
+              "host": ["{{baseUrl}}"], "path": ["api", "attendance", "{{attendanceId}}", "revisar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Horarios",
+      "item": [
+        {
+          "name": "Asignar horario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": {{empleadoId}},\n  \"workDays\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\"],\n  \"startTime\": \"08:00:00\",\n  \"endTime\": \"17:00:00\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/work-schedules", "host": ["{{baseUrl}}"], "path": ["api", "work-schedules"] }
+          }
+        },
+        {
+          "name": "Actualizar horario",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workDays\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\"],\n  \"startTime\": \"09:00:00\",\n  \"endTime\": \"18:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/work-schedules/{{workScheduleId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "work-schedules", "{{workScheduleId}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar horario",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/work-schedules/{{workScheduleId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "work-schedules", "{{workScheduleId}}"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/work-schedules/{{workScheduleId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "work-schedules", "{{workScheduleId}}"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por empleado",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/work-schedules/employee/{{empleadoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "work-schedules", "employee", "{{empleadoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Listar todos",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/work-schedules", "host": ["{{baseUrl}}"], "path": ["api", "work-schedules"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productividad",
+      "item": [
+        {
+          "name": "Cargar productividad del dia (EMPLEADO/SUPERVISOR)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha\": \"2026-07-16\",\n  \"pedidosPreparados\": 40,\n  \"bultosPreparados\": 15\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/productividad", "host": ["{{baseUrl}}"], "path": ["api", "productividad"] },
+            "description": "Requiere una asistencia abierta (clock-in previo) para el empleado autenticado. 'empleado' (id) es opcional en el body -- solo ADMIN/SUPERADMIN pueden cargarla a nombre de otro."
+          }
+        },
+        {
+          "name": "Listar todos (ADMIN/SUPERVISOR)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/productividad", "host": ["{{baseUrl}}"], "path": ["api", "productividad"] }
+          }
+        },
+        {
+          "name": "Por empleado",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/productividad/empleado/{{empleadoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "productividad", "empleado", "{{empleadoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Mi productividad",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/productividad/mi-productividad", "host": ["{{baseUrl}}"], "path": ["api", "productividad", "mi-productividad"] }
+          }
+        },
+        {
+          "name": "Por fecha",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/productividad/fecha?fecha=2026-07-16",
+              "host": ["{{baseUrl}}"], "path": ["api", "productividad", "fecha"],
+              "query": [{ "key": "fecha", "value": "2026-07-16" }]
+            }
+          }
+        },
+        {
+          "name": "KPI - Mi KPI",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/productividad/kpi/me", "host": ["{{baseUrl}}"], "path": ["api", "productividad", "kpi", "me"] }
+          }
+        },
+        {
+          "name": "KPI - Por empleado (ADMIN/SUPERVISOR)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/productividad/kpi/{{empleadoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "productividad", "kpi", "{{empleadoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Promedios - Mi promedio por jornada",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/productividad/promedios/me/jornada?inicio=2026-07-01&fin=2026-07-16",
+              "host": ["{{baseUrl}}"], "path": ["api", "productividad", "promedios", "me", "jornada"],
+              "query": [
+                { "key": "inicio", "value": "2026-07-01" },
+                { "key": "fin", "value": "2026-07-16" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Promedios - Mi promedio por hora",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/productividad/promedios/me/hora?inicio=2026-07-01&fin=2026-07-16",
+              "host": ["{{baseUrl}}"], "path": ["api", "productividad", "promedios", "me", "hora"],
+              "query": [
+                { "key": "inicio", "value": "2026-07-01" },
+                { "key": "fin", "value": "2026-07-16" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Promedios - Por empleado, jornada (ADMIN/SUPERVISOR)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/productividad/promedios/{{empleadoId}}/jornada?inicio=2026-07-01&fin=2026-07-16",
+              "host": ["{{baseUrl}}"], "path": ["api", "productividad", "promedios", "{{empleadoId}}", "jornada"],
+              "query": [
+                { "key": "inicio", "value": "2026-07-01" },
+                { "key": "fin", "value": "2026-07-16" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Promedios - Por empleado, hora (ADMIN/SUPERVISOR)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/productividad/promedios/{{empleadoId}}/hora?inicio=2026-07-01&fin=2026-07-16",
+              "host": ["{{baseUrl}}"], "path": ["api", "productividad", "promedios", "{{empleadoId}}", "hora"],
+              "query": [
+                { "key": "inicio", "value": "2026-07-01" },
+                { "key": "fin", "value": "2026-07-16" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Objetivos",
+      "item": [
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empleadoId\": {{empleadoId}},\n  \"tipo\": \"PEDIDOS\",\n  \"valorSemanal\": 200,\n  \"semanaInicio\": null\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/objetivos", "host": ["{{baseUrl}}"], "path": ["api", "objetivos"] },
+            "description": "'semanaInicio' es opcional (LocalDate, lunes de la semana); si se omite, toma el lunes de la semana actual. 'tipo' es PEDIDOS o DINERO."
+          }
+        },
+        {
+          "name": "Actualizar (ADMIN/SUPERADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"valorSemanal\": 250\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/objetivos/{{objetivoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "objetivos", "{{objetivoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar (ADMIN/SUPERADMIN)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/objetivos/{{objetivoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "objetivos", "{{objetivoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/objetivos/{{objetivoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "objetivos", "{{objetivoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Listar por empleado",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/objetivos/empleado/{{empleadoId}}",
+              "host": ["{{baseUrl}}"], "path": ["api", "objetivos", "empleado", "{{empleadoId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Migracion desde Excel",
+      "item": [
+        {
+          "name": "Importar Excel",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": [] }]
+            },
+            "url": { "raw": "{{baseUrl}}/api/excel/import", "host": ["{{baseUrl}}"], "path": ["api", "excel", "import"] },
+            "description": "Archivo .xlsx o .xls. Adjuntar manualmente desde Hoppscotch (los binarios no se pueden empaquetar en la coleccion)."
+          }
+        }
+      ]
+    }
+  ]
+}
