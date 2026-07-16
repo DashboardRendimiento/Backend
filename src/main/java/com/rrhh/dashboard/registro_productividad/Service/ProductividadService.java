@@ -4,14 +4,12 @@ import com.rrhh.dashboard.Asistencia.Entity.AttendanceRecord;
 import com.rrhh.dashboard.Asistencia.Repository.AttendanceRecordRepository;
 import com.rrhh.dashboard.Empleados.Entity.Empleados;
 import com.rrhh.dashboard.Empleados.services.EmpleadoService;
-import com.rrhh.dashboard.registro_productividad.Dtos.DashboardEventDTO;
 import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
 import com.rrhh.dashboard.registro_productividad.repository.ProductividadRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,9 +26,6 @@ public class ProductividadService {
     private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final AttendanceRecordRepository attendanceRepository;
-
-    // NUEVO
-    private final SimpMessagingTemplate messagingTemplate;
 
     private Empleados obtenerEmpleadoAutenticado() {
 
@@ -72,15 +67,7 @@ public class ProductividadService {
         registro_productividad guardado =
                 repository.save(productividad);
 
-        // Notificar al dashboard
-        messagingTemplate.convertAndSend(
-                "/topic/dashboard",
-                new DashboardEventDTO(
-                        "PRODUCTIVIDAD_ACTUALIZADA",
-                        guardado.getEmpleado().getId(),
-                        LocalDateTime.now()
-                )
-        );
+     
 
         return guardado;
     }

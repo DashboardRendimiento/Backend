@@ -1,26 +1,17 @@
 package com.rrhh.dashboard.registro_productividad.Dtos;
 
 import lombok.Data;
+import java.time.LocalDate;
 
 @Data
 public class ProductividadKPIDTO {
+    
+    private int totalPedidos;
+    private int pedidosDia;
+    private double objetivoPedidos;
+    private double pedidosPendientesObjetivo;
+    private double porcentajeCumplimiento;
+    private LocalDate fechaUtilizada;
+    
 
-    private Integer totalPedidos;
-
-    private Integer totalBultos;
-
-    private Integer totalPendientes;
-
-    private Double horasTrabajadas;
-
-    private Double pedidosPorHora;
-
-    private Double bultosPorHora;
-
-    private Double promedioPedidosPorJornada;
-
-    private Double promedioBultosPorJornada;
-    private Double objetivoPedidos;
-    private Double pedidosPendientesObjetivo;
-    private Double porcentajeCumplimiento;
 }

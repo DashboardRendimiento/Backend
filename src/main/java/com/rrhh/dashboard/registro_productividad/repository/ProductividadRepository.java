@@ -45,9 +45,8 @@ public interface ProductividadRepository extends JpaRepository<registro_producti
     @EntityGraph(attributePaths = {"empleado"})
     List<registro_productividad> findByFechaBetween(LocalDate inicio, LocalDate fin);
     List<registro_productividad> findByAsistenciaId(Long asistenciaId);
-
-        List<registro_productividad> findByAsistenciaIdAndEmpleadoId(
-                Long asistenciaId,
+List<registro_productividad> findByAsistenciaIdAndEmpleadoId(
+                        Long asistenciaId,
                 Long empleadoId
         );
                 Optional<registro_productividad>
@@ -55,4 +54,10 @@ public interface ProductividadRepository extends JpaRepository<registro_producti
                 Long empleadoId,
                 LocalDate fecha
         );
+         @EntityGraph(attributePaths = {"empleado"})
+    List<registro_productividad> findByEmpleadoIdAndFechaBetweenOrderByFechaAsc(
+            Long empleadoId,
+            LocalDate inicio,
+            LocalDate fin
+    );
 }
