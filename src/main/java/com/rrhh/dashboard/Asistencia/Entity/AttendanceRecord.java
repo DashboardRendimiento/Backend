@@ -1,5 +1,6 @@
 package com.rrhh.dashboard.Asistencia.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.rrhh.dashboard.Asistencia.exceptions.AlreadyClockedOutException;
 import com.rrhh.dashboard.Asistencia.exceptions.RevisionNoAplicableException;
 import jakarta.persistence.Column;
@@ -21,6 +22,7 @@ import java.time.Instant;
  * "Entrada"/"Salida", cada uno con fecha/hora capturada automaticamente en
  * el servidor (nunca un valor provisto por el cliente).
  */
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "attendance_records")
 public class AttendanceRecord {

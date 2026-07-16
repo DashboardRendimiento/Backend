@@ -22,7 +22,7 @@ public class ProductividadController {
 
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('EMPLEADO','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('EMPLEADO','SUPERVISOR','ADMINISTRADOR','SUPERADMIN')")
     public ResponseEntity<?> guardar(
             @RequestBody ProductividadDiariaDTO dto){
 

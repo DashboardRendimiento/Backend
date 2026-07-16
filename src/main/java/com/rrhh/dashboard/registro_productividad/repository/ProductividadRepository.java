@@ -8,6 +8,7 @@ import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductividadRepository extends JpaRepository<registro_productividad, Long> {
@@ -44,9 +45,19 @@ public interface ProductividadRepository extends JpaRepository<registro_producti
     @EntityGraph(attributePaths = {"empleado"})
     List<registro_productividad> findByFechaBetween(LocalDate inicio, LocalDate fin);
     List<registro_productividad> findByAsistenciaId(Long asistenciaId);
-
 List<registro_productividad> findByAsistenciaIdAndEmpleadoId(
-        Long asistenciaId,
-        Long empleadoId
-);
+                        Long asistenciaId,
+                Long empleadoId
+        );
+                Optional<registro_productividad>
+        findTopByEmpleadoIdAndFechaLessThanEqualOrderByFechaDesc(
+                Long empleadoId,
+                LocalDate fecha
+        );
+         @EntityGraph(attributePaths = {"empleado"})
+    List<registro_productividad> findByEmpleadoIdAndFechaBetweenOrderByFechaAsc(
+            Long empleadoId,
+            LocalDate inicio,
+            LocalDate fin
+    );
 }

@@ -9,14 +9,15 @@ import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
 import com.rrhh.dashboard.registro_productividad.events.ProductividadRegistradaEvent;
 import com.rrhh.dashboard.registro_productividad.repository.ProductividadRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,7 +29,6 @@ public class ProductividadService {
     private final EmpleadoService empleadosService;
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final ApplicationEventPublisher eventPublisher;
-
 
     private Empleados obtenerEmpleadoAutenticado() {
 
@@ -45,7 +45,6 @@ public class ProductividadService {
     // ==========================
     // GUARDAR / ACTUALIZAR
     // ==========================
-
     public registro_productividad guardar(registro_productividad productividad, Long dtoEmpleadoId) {
         Empleados autenticado = obtenerEmpleadoAutenticado();
         Empleados empleadoAsignado;
@@ -62,6 +61,7 @@ public class ProductividadService {
         }
 
         productividad.setEmpleado(empleadoAsignado);
+        productividad.setFechaHora(LocalDateTime.now());
 
         AttendanceRecord asistenciaAbierta = attendanceRecordRepository
                 .findFirstByEmployeeIdAndClockOutAtIsNullOrderByClockInAtDesc(empleadoAsignado.getId())

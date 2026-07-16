@@ -1,6 +1,7 @@
 package com.rrhh.dashboard.registro_productividad.Controllers;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -29,15 +30,9 @@ public class ProductivadPromediosController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate inicio,
 
-                @RequestParam(required = false)
+            @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate fin) {
-
-
-        if (fin == null) {
-            fin = LocalDate.now();
-        }
- 
 
         return ResponseEntity.ok(
                 productividadPromedios.obtenerMiPromedioPorJornada(inicio, fin)
@@ -48,20 +43,15 @@ public class ProductivadPromediosController {
      * Promedio por hora del usuario autenticado.
      */
     @GetMapping("/me/hora")
-    @PreAuthorize("hasRole('EMPLEADO')")
-    public ResponseEntity<?> obtenerMiPromedioPorHora(
+        @PreAuthorize("hasRole('EMPLEADO')")
+    public ResponseEntity<PromedioProductividadDTO> obtenerMiPromedioPorHora(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate inicio,
 
-            @RequestParam(required = false)
+            @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate fin) {
-
-
-        if (fin == null) {
-            fin = LocalDate.now();
-        }
 
         return ResponseEntity.ok(
                 productividadPromedios.obtenerMiPromedioPorHora(inicio, fin)
@@ -72,7 +62,6 @@ public class ProductivadPromediosController {
      * Promedio por jornada de un empleado específico.
      */
     @GetMapping("/{empleadoId}/jornada")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
     public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorJornada(
             @PathVariable Long empleadoId,
 
@@ -96,18 +85,28 @@ public class ProductivadPromediosController {
     /**
      * Promedio por hora de un empleado específico.
      */
-    @GetMapping("/{empleadoId}/hora")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','SUPERADMIN')")
-    public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorHora(
-            @PathVariable Long empleadoId,
+   @GetMapping("/{empleadoId}/hora")
+        public ResponseEntity<PromedioProductividadDTO> obtenerPromedioPorHora(
+                @PathVariable Long empleadoId,
 
-            @RequestParam
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate inicio,
+                @RequestParam(required = false)
+                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                LocalDateTime inicio,
 
-            @RequestParam
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate fin) {
+                @RequestParam(required = false)
+                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                LocalDateTime fin) {
+
+
+        if (inicio == null) {
+                inicio = LocalDate.now()
+                        .atStartOfDay();
+        }
+
+        if (fin == null) {
+                fin = LocalDateTime.now();
+        }
+
 
         return ResponseEntity.ok(
                 productividadPromedios.obtenerPromedioPorHora(
@@ -116,5 +115,5 @@ public class ProductivadPromediosController {
                         fin
                 )
         );
-    }
+        }
 }
