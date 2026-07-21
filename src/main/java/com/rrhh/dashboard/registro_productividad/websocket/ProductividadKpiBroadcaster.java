@@ -1,9 +1,11 @@
 package com.rrhh.dashboard.registro_productividad.websocket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.rrhh.dashboard.registro_productividad.Dtos.ProductividadKPIDTO;
 import com.rrhh.dashboard.registro_productividad.Service.ProductividadKPIService;
 import com.rrhh.dashboard.registro_productividad.events.ProductividadRegistradaEvent;
-import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -17,13 +19,18 @@ import org.springframework.transaction.event.TransactionalEventListener;
  * guardado en otra conexion/hilo.
  */
 @Component
-@RequiredArgsConstructor
 public class ProductividadKpiBroadcaster {
+    private static final Logger log = LoggerFactory.getLogger(ProductividadKpiBroadcaster.class);
 
     private static final String TOPIC_PREFIX = "/topic/productividad/";
 
     private final ProductividadKPIService kpiService;
     private final SimpMessagingTemplate messagingTemplate;
+    public ProductividadKpiBroadcaster(ProductividadKPIService kpiService, SimpMessagingTemplate messagingTemplate) {
+        this.kpiService = kpiService;
+        this.messagingTemplate = messagingTemplate;
+    }
+
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onProductividadRegistrada(ProductividadRegistradaEvent event) {

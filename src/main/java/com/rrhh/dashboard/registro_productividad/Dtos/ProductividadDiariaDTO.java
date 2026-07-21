@@ -1,6 +1,5 @@
 package com.rrhh.dashboard.registro_productividad.Dtos;
 
-import lombok.Data;
 
 import java.time.LocalDate;
 
@@ -27,9 +26,14 @@ public class ProductividadDiariaDTO {
     public void setPedidosEncargados(Integer pedidosEncargados) { this.pedidosEncargados = pedidosEncargados; }
     public Integer getPedidosPreparados() { return this.pedidosPreparados; }
     public void setPedidosPreparados(Integer pedidosPreparados) { this.pedidosPreparados = pedidosPreparados; }
-    public Integer getPedidosPendientes() { return this.pedidosPendientes; }
-    public void setPedidosPendientes(Integer pedidosPendientes) { this.pedidosPendientes = pedidosPendientes; }
     public Integer getBultosPreparados() { return this.bultosPreparados; }
     public void setBultosPreparados(Integer bultosPreparados) { this.bultosPreparados = bultosPreparados; }
+    public ProductividadDiariaDTO(Long empleado, LocalDate fecha, Integer pedidosEncargados, Integer pedidosPreparados, Integer bultosPreparados) {
+        this.empleado = empleado;
+        this.fecha = fecha;
+        this.pedidosEncargados = pedidosEncargados;
+        this.pedidosPreparados = pedidosPreparados;
+        this.bultosPreparados = bultosPreparados;
+    }
 }
 

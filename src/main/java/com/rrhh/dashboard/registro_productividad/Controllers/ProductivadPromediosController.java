@@ -11,14 +11,16 @@ import org.springframework.web.bind.annotation.*;
 import com.rrhh.dashboard.registro_productividad.Dtos.PromedioProductividadDTO;
 import com.rrhh.dashboard.registro_productividad.Service.ProductivadPromedios;
 
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/productividad/promedios")
-@RequiredArgsConstructor
 public class ProductivadPromediosController {
 
     private final ProductivadPromedios productividadPromedios;
+    public ProductivadPromediosController(ProductivadPromedios productividadPromedios) {
+        this.productividadPromedios = productividadPromedios;
+    }
+
 
     /**
      * Promedio por jornada del usuario autenticado.

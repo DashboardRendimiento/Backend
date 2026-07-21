@@ -1,11 +1,6 @@
 package com.rrhh.dashboard.registro_productividad.Dtos;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
 public class PromedioProductividadDTO {
     private double promedioPedidos;
     private double promedioBultos;  // Agregar este campo
@@ -18,4 +13,16 @@ public class PromedioProductividadDTO {
     }
     
    
+    public double getPromedioPedidos() { return this.promedioPedidos; }
+    public void setPromedioPedidos(double promedioPedidos) { this.promedioPedidos = promedioPedidos; }
+    public double getPromedioBultos() { return this.promedioBultos; }
+    public void setPromedioBultos(double promedioBultos) { this.promedioBultos = promedioBultos; }
+    public long getTotalJornadasOHoras() { return this.totalJornadasOHoras; }
+    public void setTotalJornadasOHoras(long totalJornadasOHoras) { this.totalJornadasOHoras = totalJornadasOHoras; }
+    public PromedioProductividadDTO() {}
+    public PromedioProductividadDTO(double promedioPedidos, double promedioBultos, long totalJornadasOHoras) {
+        this.promedioPedidos = promedioPedidos;
+        this.promedioBultos = promedioBultos;
+        this.totalJornadasOHoras = totalJornadasOHoras;
+    }
 }

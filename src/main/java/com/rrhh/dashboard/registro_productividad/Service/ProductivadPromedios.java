@@ -1,5 +1,8 @@
 package com.rrhh.dashboard.registro_productividad.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -19,17 +22,20 @@ import com.rrhh.dashboard.registro_productividad.Dtos.PromedioProductividadDTO;
 import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
 import com.rrhh.dashboard.registro_productividad.repository.ProductividadRepository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
-@Slf4j
 public class ProductivadPromedios {
+    private static final Logger log = LoggerFactory.getLogger(ProductivadPromedios.class);
     private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final AttendanceRecordRepository attendanceRepository;
+    public ProductivadPromedios(ProductividadRepository repository, EmpleadoService empleadosService, AttendanceRecordRepository attendanceRepository) {
+        this.repository = repository;
+        this.empleadosService = empleadosService;
+        this.attendanceRepository = attendanceRepository;
+    }
+
 
     private Empleados obtenerEmpleadoAutenticado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

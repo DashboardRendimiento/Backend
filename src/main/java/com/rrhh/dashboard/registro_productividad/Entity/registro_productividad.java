@@ -15,7 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
 
 @Entity
 @Table(name = "registro_productividad")
@@ -54,12 +53,10 @@ public class registro_productividad {
     public void setBultosPreparados(Integer bultosPreparados) { this.bultosPreparados = bultosPreparados; }
     public Integer getPedidosPreparados() { return this.pedidosPreparados; }
     public void setPedidosPreparados(Integer pedidosPreparados) { this.pedidosPreparados = pedidosPreparados; }
-    public Integer getPedidosEncargados() { return this.pedidosEncargados; }
-    public void setPedidosEncargados(Integer pedidosEncargados) { this.pedidosEncargados = pedidosEncargados; }
-    public LocalDateTime getFechaCarga() { return this.fechaCarga; }
-    public void setFechaCarga(LocalDateTime fechaCarga) { this.fechaCarga = fechaCarga; }
     public AttendanceRecord getAsistencia() { return this.asistencia; }
     public void setAsistencia(AttendanceRecord asistencia) { this.asistencia = asistencia; }
     public Empleados getEmpleado() { return this.empleado; }
     public void setEmpleado(Empleados empleado) { this.empleado = empleado; }
+    public LocalDateTime getFechaHora() { return this.fechaHora; }
+    public void setFechaHora(LocalDateTime fechaHora) { this.fechaHora = fechaHora; }
 }

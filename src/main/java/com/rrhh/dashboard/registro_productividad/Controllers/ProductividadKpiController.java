@@ -3,7 +3,6 @@ package com.rrhh.dashboard.registro_productividad.Controllers;
 import com.rrhh.dashboard.registro_productividad.Dtos.*;
 import com.rrhh.dashboard.registro_productividad.Service.ProductividadKPIService;
 
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,10 +11,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/productividad")
-@RequiredArgsConstructor
 public class ProductividadKpiController {
 
     private final ProductividadKPIService service;
+    public ProductividadKpiController(ProductividadKPIService service) {
+        this.service = service;
+    }
+
 
 
     // ==================================================

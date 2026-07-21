@@ -31,7 +31,6 @@ import java.util.Optional;
  * suscripcion en vez de dejar que cualquiera escuche el KPI de otro.
  */
 @Component
-@RequiredArgsConstructor
 public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
     private static final String PRODUCTIVIDAD_TOPIC_PREFIX = "/topic/productividad/";
@@ -39,6 +38,10 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
             List.of(EmployeeRole.ADMINISTRADOR, EmployeeRole.SUPERVISOR, EmployeeRole.SUPERADMIN);
 
     private final JwtRoleReader jwtRoleReader;
+    public StompAuthChannelInterceptor(JwtRoleReader jwtRoleReader) {
+        this.jwtRoleReader = jwtRoleReader;
+    }
+
 
     @Override
     public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {

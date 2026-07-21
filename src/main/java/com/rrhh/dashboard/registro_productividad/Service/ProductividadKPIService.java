@@ -1,5 +1,8 @@
 package com.rrhh.dashboard.registro_productividad.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,18 +24,21 @@ import com.rrhh.dashboard.registro_productividad.Dtos.ProductividadKPIDTO;
 import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
 import com.rrhh.dashboard.registro_productividad.repository.ProductividadRepository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class ProductividadKPIService {
+    private static final Logger log = LoggerFactory.getLogger(ProductividadKPIService.class);
 
     private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final ObjetivoService objetivoService;
+    public ProductividadKPIService(ProductividadRepository repository, EmpleadoService empleadosService, ObjetivoService objetivoService) {
+        this.repository = repository;
+        this.empleadosService = empleadosService;
+        this.objetivoService = objetivoService;
+    }
+
 
     // ==================================================
     // OBTENER EMPLEADO AUTENTICADO

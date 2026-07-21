@@ -7,7 +7,6 @@ import com.rrhh.dashboard.registro_productividad.Dtos.*;
 import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
 import com.rrhh.dashboard.registro_productividad.Service.ProductividadService;
 
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

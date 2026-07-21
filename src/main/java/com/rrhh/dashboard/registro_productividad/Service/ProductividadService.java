@@ -1,5 +1,8 @@
 package com.rrhh.dashboard.registro_productividad.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.rrhh.dashboard.Asistencia.Entity.AttendanceRecord;
 import com.rrhh.dashboard.Asistencia.Repository.AttendanceRecordRepository;
 import com.rrhh.dashboard.Asistencia.exceptions.NoOpenAttendanceRecordException;
@@ -10,7 +13,6 @@ import com.rrhh.dashboard.registro_productividad.events.ProductividadRegistradaE
 import com.rrhh.dashboard.registro_productividad.repository.ProductividadRepository;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,13 +24,20 @@ import java.util.List;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class ProductividadService {
+    private static final Logger log = LoggerFactory.getLogger(ProductividadService.class);
 
     private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final ApplicationEventPublisher eventPublisher;
+    public ProductividadService(ProductividadRepository repository, EmpleadoService empleadosService, AttendanceRecordRepository attendanceRecordRepository, ApplicationEventPublisher eventPublisher) {
+        this.repository = repository;
+        this.empleadosService = empleadosService;
+        this.attendanceRecordRepository = attendanceRecordRepository;
+        this.eventPublisher = eventPublisher;
+    }
+
 
     private Empleados obtenerEmpleadoAutenticado() {
 
