@@ -14,7 +14,6 @@ public class ProductividadDiariaDTO {
 
     private Integer pedidosPreparados;
 
-    private Integer pedidosPendientes;
 
     private Integer bultosPreparados;
 

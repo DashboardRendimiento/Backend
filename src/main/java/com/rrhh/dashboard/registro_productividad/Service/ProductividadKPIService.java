@@ -1,10 +1,9 @@
 package com.rrhh.dashboard.registro_productividad.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,178 +15,231 @@ import com.rrhh.dashboard.Empleados.services.EmpleadoService;
 import com.rrhh.dashboard.Objetivos.Entity.Objetivo;
 import com.rrhh.dashboard.Objetivos.Entity.TipoObjetivo;
 import com.rrhh.dashboard.Objetivos.services.ObjetivoService;
+import com.rrhh.dashboard.registro_productividad.Dtos.KpiMensual;
+import com.rrhh.dashboard.registro_productividad.Dtos.KpiSemanal;
 import com.rrhh.dashboard.registro_productividad.Dtos.ProductividadKPIDTO;
 import com.rrhh.dashboard.registro_productividad.Entity.registro_productividad;
 import com.rrhh.dashboard.registro_productividad.repository.ProductividadRepository;
 
-import com.rrhh.dashboard.registro_productividad.Service.ProductivadPromedios;
-
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ProductividadKPIService {
-    private static final Logger log = LoggerFactory.getLogger(ProductividadKPIService.class);
 
-     private final ProductividadRepository repository;
+    private final ProductividadRepository repository;
     private final EmpleadoService empleadosService;
     private final ObjetivoService objetivoService;
-    private final ProductivadPromedios promediosService;
-    public ProductividadKPIService(ProductividadRepository repository, EmpleadoService empleadosService, ObjetivoService objetivoService, ProductivadPromedios promediosService) {
-        this.repository = repository;
-        this.empleadosService = empleadosService;
-        this.objetivoService = objetivoService;
-        this.promediosService = promediosService;
-    }
 
+    // ==================================================
+    // OBTENER EMPLEADO AUTENTICADO
+    // ==================================================
 
-
-    private Empleados obtenerEmpleadoAutenticado() {
-
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+    public Empleados obtenerEmpleadoAutenticado() {
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
 
         Long empleadoId = Long.valueOf(authentication.getName());
 
         return empleadosService.buscarPorId(empleadoId)
-                .orElseThrow(() ->
-                        new RuntimeException("Empleado no encontrado con id: " + empleadoId));
+                .orElseThrow(() -> new RuntimeException(
+                        "Empleado no encontrado con id: " + empleadoId
+                ));
     }
 
-    //KPIS POR USUARIO AUTENTICADO
-    public ProductividadKPIDTO obtenerMiKPI() {
+    // ==================================================
+    // KPI USUARIO LOGUEADO
+    // ==================================================
 
+    public ProductividadKPIDTO obtenerMiKPI() {
         return obtenerKPI(obtenerEmpleadoAutenticado().getId());
     }
 
+    // ==================================================
+    // KPI POR EMPLEADO (COMPLETO)
+    // ==================================================
 
     public ProductividadKPIDTO obtenerKPI(Long empleadoId) {
-        // ==========================
-        // KPI HISTÃ“RIAL
-        // ==========================
+        ProductividadKPIDTO kpi = new ProductividadKPIDTO();
+        KpiSemanal kpiSemanal = new KpiSemanal();
+        KpiMensual kpiMensual = new KpiMensual();
 
-        List<registro_productividad> data =
-                repository.findByEmpleadoId(empleadoId);
-        ProductividadKPIDTO kpi =
-                new ProductividadKPIDTO();
-        int totalPedidos =
-                data.stream()
-                        .mapToInt(
-                            r -> r.getPedidosPreparados() == null ? 0 : r.getPedidosPreparados()
-                        )
-                        .sum();
-        int totalBultos =
-                data.stream()
-                        .mapToInt(
-                            r -> r.getBultosPreparados() == null ? 0 : r.getBultosPreparados()
-                        )
-                        .sum();
-
-        kpi.setTotalPedidos(totalPedidos);
-        
-        data.stream()
-            .map(registro_productividad::getFechaCarga)
-            .filter(java.util.Objects::nonNull)
-            .max(java.time.LocalDateTime::compareTo)
-            .ifPresent(kpi::setUltimaHoraCarga);
-
-        kpi.setTotalBultos(totalBultos);
-
-        // ==========================
-        // PROMEDIOS (HistÃ³ricos o del mes actual)
-        // ==========================
         LocalDate hoy = LocalDate.now();
-        LocalDate inicioMes = hoy.withDayOfMonth(1);
-        LocalDate finMes = hoy.withDayOfMonth(hoy.lengthOfMonth());
-        
-        // Usamos los Ãºltimos 30 dÃ­as para un promedio mÃ¡s representativo
-        LocalDate inicio30Dias = hoy.minusDays(30);
 
-        try {
-            var promediosHora = promediosService.obtenerPromedioPorHora(empleadoId, inicio30Dias, hoy);
-            kpi.setPedidosPorHora(promediosHora.getPromedioPedidos());
-            kpi.setBultosPorHora(promediosHora.getPromedioBultos());
+        // ==================================================
+        // 1. KPI HISTORIAL (TOTAL)
+        // ==================================================
 
-            var promediosJornada = promediosService.obtenerPromedioPorJornada(empleadoId, inicio30Dias, hoy);
-            kpi.setPromedioPedidosPorJornada(promediosJornada.getPromedioPedidos());
-            kpi.setPromedioBultosPorJornada(promediosJornada.getPromedioBultos());
-        } catch(Exception e) {
-            kpi.setPedidosPorHora(0.0);
-            kpi.setBultosPorHora(0.0);
-            kpi.setPromedioPedidosPorJornada(0.0);
-            kpi.setPromedioBultosPorJornada(0.0);
-        }
+        List<registro_productividad> data = repository.findByEmpleadoId(empleadoId);
+        int totalPedidos = data.stream()
+                .mapToInt(registro_productividad::getPedidosPreparados)
+                .sum();
+        kpi.setTotalPedidos(totalPedidos);
 
-        // ==========================
-        // OBJETIVO SEMANAL
-        // ==========================
+        // ==================================================
+        // 2. KPI DEL DÍA ACTUAL
+        // ==================================================
 
-        LocalDate inicioSemana =
-                obtenerInicioSemana(hoy);
+        obtenerKPIDiario(kpi, empleadoId, hoy);
 
-        LocalDate finSemana =
-                obtenerFinSemana(hoy);
+        // ==================================================
+        // 3. KPI DE LA SEMANA
+        // ==================================================
 
-        List<registro_productividad> registrosSemana =
-                repository.findByEmpleadoIdAndFechaBetween(
-                        empleadoId,
-                        inicioSemana,
-                        finSemana
-                );
-        int pedidosSemana =
-                registrosSemana.stream()
-                        .mapToInt(
-                            r -> r.getPedidosPreparados() == null ? 0 : r.getPedidosPreparados()
-                        )
-                        .sum();
+        obtenerKPISemanal(kpiSemanal, empleadoId, hoy);
 
-        Objetivo objetivoPedidos =
-                objetivoService.obtenerObjetivoActual(
-                        empleadoId,
-                        TipoObjetivo.PEDIDOS,
-                        hoy
-                );
+        // ==================================================
+        // 4. KPI DEL MES (SOLO TOTAL DE PEDIDOS)
+        // ==================================================
 
-        if(objetivoPedidos != null){
-            double objetivo =
-                    objetivoPedidos.getValorSemanal();
-
-            double pendiente =
-                    objetivo - pedidosSemana;
-
-            if(pendiente < 0){
-                pendiente = 0;
-            }
-
-            kpi.setObjetivoPedidos(
-                    objetivo
-            );
-
-            kpi.setPedidosPendientesObjetivo(
-                    pendiente
-            );
-
-            kpi.setPorcentajeCumplimiento(
-                    (pedidosSemana / objetivo) * 100
-            );
-        }
+        obtenerKPIMensual(kpiMensual, empleadoId, hoy);
 
         return kpi;
     }
 
-//==============================================
-//=========METODOS AUXILIARES===================
-//===============================================
-private LocalDate obtenerInicioSemana(LocalDate fecha) {
-    return fecha.minusDays(
-            fecha.getDayOfWeek().getValue() - 1
-    );
-}
+    // ==================================================
+    // MÉTODO PARA KPI DIARIO
+    // ==================================================
+
+    public void obtenerKPIDiario(ProductividadKPIDTO kpi, Long empleadoId, LocalDate hoy) {
+        List<registro_productividad> registrosDia = repository
+                .findByEmpleadoIdAndFecha(empleadoId, hoy);
+        
+        LocalDate fechaUtilizada = hoy;
+
+        // Si hoy no tiene registros, buscar el último registro anterior
+        if (registrosDia.isEmpty()) {
+            Optional<registro_productividad> ultimoRegistro = repository
+                    .findTopByEmpleadoIdAndFechaLessThanEqualOrderByFechaDesc(
+                            empleadoId, hoy.minusDays(1)
+                    );
+            if (ultimoRegistro.isPresent()) {
+                registro_productividad registro = ultimoRegistro.get();
+                registrosDia = List.of(registro);
+                fechaUtilizada = registro.getFecha();
+            }
+        }
+
+        int pedidosDia = registrosDia.stream()
+                .mapToInt(registro_productividad::getPedidosPreparados)
+                .sum();
+
+        kpi.setPedidosDia(pedidosDia);
+        kpi.setFechaUtilizada(fechaUtilizada);
+
+        // Obtener objetivo
+        Objetivo objetivoPedidos = objetivoService.obtenerObjetivoActual(
+                empleadoId, TipoObjetivo.PEDIDOS, fechaUtilizada
+        );
+
+        if (objetivoPedidos != null && objetivoPedidos.getValorDiario() > 0) {
+            double objetivoSemanal = objetivoPedidos.getValorDiario();
+            double objetivoDiario = objetivoSemanal / 7;
+            
+            kpi.setObjetivoPedidos(objetivoDiario);
+            
+            double pendiente = Math.max(0, objetivoDiario - pedidosDia);
+            kpi.setPedidosPendientesObjetivo(pendiente);
+
+            if (objetivoDiario > 0) {
+                double porcentaje = (pedidosDia * 100.0) / objetivoDiario;
+                // Limitar el porcentaje a 100% (no puede superar el 100%)
+                kpi.setPorcentajeCumplimiento(Math.min(porcentaje, 100.0));
+            }
+        } else {
+            log.warn("No se encontró objetivo para el empleado {} en la fecha {}", empleadoId, fechaUtilizada);
+            kpi.setObjetivoPedidos(0);
+            kpi.setPedidosPendientesObjetivo(0);
+            kpi.setPorcentajeCumplimiento(0);
+        }
+    }
+
+    // ==================================================
+    // KPI SEMANAL
+    // ==================================================
+
+    public void obtenerKPISemanal(KpiSemanal kpi, Long empleadoId, LocalDate hoy) {
+        LocalDate inicioSemana = hoy.with(DayOfWeek.MONDAY);
+        LocalDate finSemana = hoy.with(DayOfWeek.SUNDAY);
+
+        // Obtener registros de la semana
+        List<registro_productividad> registrosSemana = repository
+                .findByEmpleadoIdAndFechaBetween(empleadoId, inicioSemana, finSemana);
+
+        int pedidosSemana = registrosSemana.stream()
+                .mapToInt(registro_productividad::getPedidosPreparados)
+                .sum();
+
+        kpi.setPedidosSemana(pedidosSemana);
+        kpi.setInicioSemana(inicioSemana);
+        kpi.setFinSemana(finSemana);
+
+        // Obtener objetivo semanal
+        Objetivo objetivoPedidos = objetivoService.obtenerObjetivoActual(
+                empleadoId, TipoObjetivo.PEDIDOS, hoy
+        );
+
+        if (objetivoPedidos != null && objetivoPedidos.getValorDiario() > 0) {
+            double objetivoSemanal = objetivoPedidos.getValorDiario();
+            kpi.setObjetivoSemanal(objetivoSemanal);
+
+            if (objetivoSemanal > 0) {
+                double porcentaje = (pedidosSemana * 100.0) / objetivoSemanal;
+                // Limitar el porcentaje a 100%
+                kpi.setPorcentajeCumplimientoSemanal(Math.min(porcentaje, 100.0));
+            }
+        } else {
+            log.warn("No se encontró objetivo semanal para el empleado {}", empleadoId);
+            kpi.setObjetivoSemanal(0);
+            kpi.setPorcentajeCumplimientoSemanal(0);
+        }
+    }
+
+    // ==================================================
+    // KPI MENSUAL (SOLO TOTAL DE PEDIDOS)
+    // ==================================================
+
+    public void obtenerKPIMensual(KpiMensual kpiMensual, Long empleadoId, LocalDate hoy) {
+        LocalDate inicioMes = hoy.withDayOfMonth(1);
+        LocalDate finMes = hoy.withDayOfMonth(hoy.lengthOfMonth());
+
+        // Obtener registros del mes
+        List<registro_productividad> registrosMes = repository
+                .findByEmpleadoIdAndFechaBetween(empleadoId, inicioMes, finMes);
+
+        int pedidosMes = registrosMes.stream()
+                .mapToInt(registro_productividad::getPedidosPreparados)
+                .sum();
+
+        kpiMensual.setPedidosMes(pedidosMes);
+        kpiMensual.setInicioMes(inicioMes);
+        kpiMensual.setFinMes(finMes);
+    }
+
+    // ==================================================
+    // MÉTODOS CRUD
+    // ==================================================
 
 
-private LocalDate obtenerFinSemana(LocalDate fecha) {
-    return obtenerInicioSemana(fecha)
-            .plusDays(5);
-}
-}
+    public ProductividadKPIDTO obtenerMiProductividad() {
+        return obtenerMiKPI();
+    }
 
+    public KpiSemanal obtenerKPISoloSemanal(Long empleadoId) {
+        KpiSemanal kpiSemanal = new KpiSemanal();
+        LocalDate hoy = LocalDate.now();
+        obtenerKPISemanal(kpiSemanal, empleadoId, hoy);
+        return kpiSemanal;
+    }
+
+    public KpiMensual obtenerKPISoloMensual(Long empleadoId) {
+        KpiMensual kpiMensual = new KpiMensual();
+        LocalDate hoy = LocalDate.now();
+        obtenerKPIMensual(kpiMensual, empleadoId, hoy);
+        return kpiMensual;
+    }
+}

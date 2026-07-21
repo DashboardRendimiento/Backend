@@ -24,7 +24,8 @@ public class CorsConfig implements WebMvcConfigurer {
                     "http://localhost:4200",      // Angular dev server
                     "http://127.0.0.1:3000",
                     "http://127.0.0.1:8080",
-                    "http://127.0.0.1:4200"
+                    "http://127.0.0.1:4200",
+                    "https://hoppscotch.io"       // Hoppscotch (app web)
                 )
                 // Metodos HTTP permitidos
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")

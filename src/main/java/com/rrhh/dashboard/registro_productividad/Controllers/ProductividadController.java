@@ -30,7 +30,7 @@ public class ProductividadController {
 
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('EMPLEADO','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('EMPLEADO','SUPERVISOR','ADMINISTRADOR','SUPERADMIN')")
     public ResponseEntity<?> guardar(
             @RequestBody ProductividadDiariaDTO dto){
 
@@ -40,9 +40,6 @@ public class ProductividadController {
 
 
         productividad.setFecha(dto.getFecha());
-        productividad.setPedidosEncargados(
-                dto.getPedidosEncargados()
-        );
 
         productividad.setPedidosPreparados(
                 dto.getPedidosPreparados()

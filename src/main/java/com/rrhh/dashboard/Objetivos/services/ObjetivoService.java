@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Objetivos semanales por empleado (R-007 de Horarios es un modulo
@@ -58,23 +59,30 @@ public class ObjetivoService {
     public List<Objetivo> listarPorEmpleado(Long empleadoId) {
         return repository.findByEmpleadoId(empleadoId);
     }
-    public Objetivo obtenerObjetivoActual(
+        public Objetivo obtenerObjetivoActual(
             Long empleadoId,
             TipoObjetivo tipo,
             LocalDate fecha
     ){
+        LocalDate inicioSemana = fecha.minusDays(fecha.getDayOfWeek().getValue() - 1);
 
-        LocalDate inicioSemana =
-                fecha.minusDays(fecha.getDayOfWeek().getValue() - 1);
+        // Obtener la lista
+        Optional<Objetivo> objetivos = repository
+            .findByEmpleadoIdAndTipoAndSemanaInicio(
+                empleadoId,
+                tipo,
+                inicioSemana
+            );
 
+        // Si está vacía, retornar null
+        if (objetivos.isEmpty()) {
+            return null;
+        }
 
-        return repository
-                .findByEmpleadoIdAndTipoAndSemanaInicio(
-                        empleadoId,
-                        tipo,
-                        inicioSemana
-                )
-                .orElse(null);
+        // Si hay duplicados, tomar el más reciente (mayor ID)
+        return objetivos.stream()
+            .max((o1, o2) -> o1.getId().compareTo(o2.getId()))
+            .orElse(null);
     }
 
     private LocalDate lunesDeEstaSemana() {

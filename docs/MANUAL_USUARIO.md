@@ -193,7 +193,7 @@ asociada a ese fichaje abierto, así que si no fichaste Entrada primero da 409.
 ```bash
 curl -X POST http://localhost:8080/api/productividad \
   -H "Content-Type: application/json" -H "Authorization: Bearer <token-del-empleado>" \
-  -d '{"fecha": "2026-07-06", "pedidosEncargados": 50, "pedidosPreparados": 40, "bultosPreparados": 15}'
+  -d '{"fecha": "2026-07-06", "pedidosPreparados": 40, "bultosPreparados": 15}'
 ```
 
 - `GET /api/productividad/mi-productividad` — el propio empleado ve su historial.
@@ -217,10 +217,12 @@ Totales acumulados (pedidos, bultos) y cruce contra el objetivo semanal de tipo 
 Promedio de pedidos/bultos por jornada, o por hora trabajada (cruza contra los fichajes de
 Asistencia del rango), entre `inicio` y `fin` (`YYYY-MM-DD`, inclusive):
 
-- `GET /api/productividad/promedios/me/jornada?inicio=...&fin=...` — propio (EMPLEADO).
-- `GET /api/productividad/promedios/me/hora?inicio=...&fin=...` — propio (EMPLEADO).
-- `GET /api/productividad/promedios/{empleadoId}/jornada?inicio=...&fin=...` — de un empleado (ADMINISTRADOR/SUPERVISOR).
-- `GET /api/productividad/promedios/{empleadoId}/hora?inicio=...&fin=...` — de un empleado (ADMINISTRADOR/SUPERVISOR).
+- `GET /api/productividad/promedios/me/jornada?inicio=...&fin=...` — propio (EMPLEADO). `fin` es
+  opcional: si no se manda, se usa la fecha de hoy.
+- `GET /api/productividad/promedios/me/hora?inicio=...&fin=...` — propio (EMPLEADO). `fin` es
+  opcional, mismo criterio.
+- `GET /api/productividad/promedios/{empleadoId}/jornada?inicio=...&fin=...` — de un empleado (ADMINISTRADOR/SUPERVISOR). `inicio` y `fin` son obligatorios acá.
+- `GET /api/productividad/promedios/{empleadoId}/hora?inicio=...&fin=...` — de un empleado (ADMINISTRADOR/SUPERVISOR). `inicio` y `fin` son obligatorios acá.
 
 ## 7. Objetivos
 
