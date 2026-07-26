@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class ErrorResponse {
     public ErrorResponse(java.time.LocalDateTime timestamp, int status, String error, String message, String path, java.util.List<ValidationError> validationErrors) {
@@ -27,9 +26,6 @@ public class ErrorResponse {
     private String path;
     private List<ValidationError> validationErrors;
     
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class ValidationError {
         public ValidationError(String field, String message, Object rejectedValue) {
             this.field = field;
