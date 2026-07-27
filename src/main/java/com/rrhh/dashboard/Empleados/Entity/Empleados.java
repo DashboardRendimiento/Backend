@@ -79,6 +79,7 @@ public class Empleados {
     public void setRole(EmployeeRole role) { this.role = role; }
     public boolean getActive() { return this.active; }
     public void setActive(boolean active) { this.active = active; }
+        @JsonIgnore
     public byte[] getFotoReferencia() { return this.fotoReferencia; }
     public void setFotoReferencia(byte[] fotoReferencia) { this.fotoReferencia = fotoReferencia; }
 }

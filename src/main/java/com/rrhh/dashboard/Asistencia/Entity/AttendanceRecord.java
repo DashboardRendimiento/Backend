@@ -137,6 +137,7 @@ public class AttendanceRecord {
         return updatedAt;
     }
 
+        @com.fasterxml.jackson.annotation.JsonIgnore
     public byte[] getFotoCapturada() {
         return fotoCapturada;
     }

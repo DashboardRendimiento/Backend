@@ -12,6 +12,7 @@ import com.rrhh.dashboard.Empleados.Repository.EmpleadoRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.rrhh.dashboard.Asistencia.websocket.AttendanceBroadcaster;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,15 +31,18 @@ public class AttendanceService {
     private final AttendanceRecordRepository repository;
     private final EmpleadoRepository empleadoRepository;
     private final ReconocimientoFacialClient reconocimientoFacialClient;
+    private final AttendanceBroadcaster attendanceBroadcaster;
     private final double umbralAuto;
 
     public AttendanceService(AttendanceRecordRepository repository,
                               EmpleadoRepository empleadoRepository,
                               ReconocimientoFacialClient reconocimientoFacialClient,
+                              AttendanceBroadcaster attendanceBroadcaster,
                               @Value("${app.reconocimiento-facial.umbral-auto}") double umbralAuto) {
         this.repository = repository;
         this.empleadoRepository = empleadoRepository;
         this.reconocimientoFacialClient = reconocimientoFacialClient;
+        this.attendanceBroadcaster = attendanceBroadcaster;
         this.umbralAuto = umbralAuto;
     }
 
@@ -62,7 +66,9 @@ public class AttendanceService {
             record.registrarVerificacionFacial(fotoCapturada, null, EstadoVerificacionFacial.PENDIENTE_REVISION);
             aplicarVerificacionFacial(record, employeeId, fotoCapturada);
         }
-        return repository.save(record);
+        AttendanceRecord savedRecord = repository.save(record);
+        attendanceBroadcaster.broadcastAttendanceUpdate(employeeId, "CLOCK_IN");
+        return savedRecord;
     }
 
     private void aplicarVerificacionFacial(AttendanceRecord record, Long employeeId, byte[] fotoCapturada) {
@@ -92,7 +98,9 @@ public class AttendanceService {
                 .findFirstByEmployeeIdAndClockOutAtIsNullOrderByClockInAtDesc(employeeId)
                 .orElseThrow(() -> new NoOpenAttendanceRecordException(employeeId));
         record.registerClockOut();
-        return record;
+        AttendanceRecord savedRecord = repository.save(record); // Explicitly save to flush the update before broadcasting if needed, though Transactional would commit at the end.
+        attendanceBroadcaster.broadcastAttendanceUpdate(employeeId, "CLOCK_OUT");
+        return savedRecord;
     }
 
     private void requireOwnRecord(Long employeeId, Long authenticatedEmployeeId) {

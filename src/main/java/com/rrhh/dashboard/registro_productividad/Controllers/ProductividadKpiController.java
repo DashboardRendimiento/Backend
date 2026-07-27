@@ -25,33 +25,31 @@ public class ProductividadKpiController {
     // ==================================================
 
     @GetMapping("/kpi/mi-kpi")
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('EMPLEADO', 'SUPERVISOR', 'ADMINISTRADOR', 'SUPERADMIN')")
     public ResponseEntity<ProductividadKPIDTO> getMiKPI() {
         return ResponseEntity.ok(service.obtenerMiKPI());
     }
 
-    @GetMapping("/kpi/empleado/{empleadoId}")
-        @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR')")
-
+    @GetMapping({"/kpi/empleado/{empleadoId}", "/kpi/{empleadoId}"})
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR', 'SUPERADMIN')")
     public ResponseEntity<ProductividadKPIDTO> getKPIEmpleado(@PathVariable Long empleadoId) {
         return ResponseEntity.ok(service.obtenerKPI(empleadoId));
     }
 
     @GetMapping("/kpi/semanal/{empleadoId}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR', 'SUPERADMIN')")
     public ResponseEntity<KpiSemanal> getKPISemanal(@PathVariable Long empleadoId) {
         return ResponseEntity.ok(service.obtenerKPISoloSemanal(empleadoId));
     }
 
     @GetMapping("/kpi/mensual/{empleadoId}")
-        @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR')")
-
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR', 'SUPERADMIN')")
     public ResponseEntity<KpiMensual> getKPIMensual(@PathVariable Long empleadoId) {
         return ResponseEntity.ok(service.obtenerKPISoloMensual(empleadoId));
     }
 
     @GetMapping("/kpi/mi-kpi-semanal")
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('EMPLEADO', 'SUPERVISOR', 'ADMINISTRADOR', 'SUPERADMIN')")
     public ResponseEntity<KpiSemanal> getMiKPISemanal() {
         return ResponseEntity.ok(service.obtenerKPISoloSemanal(
                 service.obtenerEmpleadoAutenticado().getId()
@@ -59,7 +57,7 @@ public class ProductividadKpiController {
     }
 
     @GetMapping("/kpi/mi-kpi-mensual")
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('EMPLEADO', 'SUPERVISOR', 'ADMINISTRADOR', 'SUPERADMIN')")
     public ResponseEntity<KpiMensual> getMiKPIMensual() {
         return ResponseEntity.ok(service.obtenerKPISoloMensual(
                 service.obtenerEmpleadoAutenticado().getId()

@@ -80,7 +80,7 @@ public class ProductividadController {
 
     @GetMapping("/mi-productividad")
 
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('EMPLEADO', 'SUPERVISOR', 'ADMINISTRADOR', 'SUPERADMIN')")
     public ResponseEntity<?> miProductividad(){
 
         return ResponseEntity.ok(
