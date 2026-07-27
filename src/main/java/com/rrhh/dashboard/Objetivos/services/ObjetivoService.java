@@ -3,8 +3,11 @@ package com.rrhh.dashboard.Objetivos.services;
 import com.rrhh.dashboard.Objetivos.Entity.Objetivo;
 import com.rrhh.dashboard.Objetivos.Entity.TipoObjetivo;
 import com.rrhh.dashboard.Objetivos.Repository.ObjetivoRepository;
+import com.rrhh.dashboard.Objetivos.dtos.ObjetivoResponse;
+import com.rrhh.dashboard.Objetivos.events.ObjetivoAsignadoEvent;
 import com.rrhh.dashboard.Objetivos.exceptions.DuplicateObjetivoException;
 import com.rrhh.dashboard.Objetivos.exceptions.ObjetivoNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +24,11 @@ import java.util.Optional;
 public class ObjetivoService {
 
     private final ObjetivoRepository repository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public ObjetivoService(ObjetivoRepository repository) {
+    public ObjetivoService(ObjetivoRepository repository, ApplicationEventPublisher eventPublisher) {
         this.repository = repository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -32,13 +37,16 @@ public class ObjetivoService {
         if (repository.existsByEmpleadoIdAndTipoAndSemanaInicio(empleadoId, tipo, semana)) {
             throw new DuplicateObjetivoException(empleadoId, tipo, semana);
         }
-        return repository.save(new Objetivo(empleadoId, tipo, valorSemanal, semana));
+        Objetivo objetivo = repository.save(new Objetivo(empleadoId, tipo, valorSemanal, semana));
+        eventPublisher.publishEvent(new ObjetivoAsignadoEvent(objetivo.getEmpleadoId(), ObjetivoResponse.from(objetivo)));
+        return objetivo;
     }
 
     @Transactional
     public Objetivo actualizar(Long id, Double nuevoValorSemanal) {
         Objetivo objetivo = obtener(id);
         objetivo.setValorSemanal(nuevoValorSemanal);
+        eventPublisher.publishEvent(new ObjetivoAsignadoEvent(objetivo.getEmpleadoId(), ObjetivoResponse.from(objetivo)));
         return objetivo;
     }
 
