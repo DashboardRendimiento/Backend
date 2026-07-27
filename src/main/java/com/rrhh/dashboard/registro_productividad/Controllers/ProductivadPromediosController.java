@@ -26,7 +26,7 @@ public class ProductivadPromediosController {
      * Promedio por jornada del usuario autenticado.
      */
     @GetMapping("/me/jornada")
-        @PreAuthorize("hasRole('EMPLEADO')")
+        @PreAuthorize("hasAnyRole('EMPLEADO', 'SUPERVISOR', 'ADMINISTRADOR', 'SUPERADMIN')")
     public ResponseEntity<PromedioProductividadDTO> obtenerMiPromedioPorJornada(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -45,7 +45,7 @@ public class ProductivadPromediosController {
      * Promedio por hora del usuario autenticado.
      */
     @GetMapping("/me/hora")
-        @PreAuthorize("hasRole('EMPLEADO')")
+        @PreAuthorize("hasAnyRole('EMPLEADO', 'SUPERVISOR', 'ADMINISTRADOR', 'SUPERADMIN')")
     public ResponseEntity<PromedioProductividadDTO> obtenerMiPromedioPorHora(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

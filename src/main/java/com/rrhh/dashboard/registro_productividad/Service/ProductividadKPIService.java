@@ -142,9 +142,8 @@ public class ProductividadKPIService {
                 empleadoId, TipoObjetivo.PEDIDOS, fechaUtilizada
         );
 
-        if (objetivoPedidos != null && objetivoPedidos.getValorDiario() > 0) {
-            double objetivoSemanal = objetivoPedidos.getValorDiario();
-            double objetivoDiario = objetivoSemanal / 7;
+        if (objetivoPedidos != null && objetivoPedidos.getValorSemanal() > 0) {
+            double objetivoDiario = objetivoPedidos.getValorDiario();
             
             kpi.setObjetivoPedidos(objetivoDiario);
             
@@ -189,8 +188,8 @@ public class ProductividadKPIService {
                 empleadoId, TipoObjetivo.PEDIDOS, hoy
         );
 
-        if (objetivoPedidos != null && objetivoPedidos.getValorDiario() > 0) {
-            double objetivoSemanal = objetivoPedidos.getValorDiario();
+        if (objetivoPedidos != null && objetivoPedidos.getValorSemanal() > 0) {
+            double objetivoSemanal = objetivoPedidos.getValorSemanal();
             kpi.setObjetivoSemanal(objetivoSemanal);
 
             if (objetivoSemanal > 0) {

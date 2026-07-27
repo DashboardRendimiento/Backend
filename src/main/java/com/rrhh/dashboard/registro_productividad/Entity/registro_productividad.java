@@ -35,6 +35,7 @@ public class registro_productividad {
     @Column(name="fechaHora")
     private LocalDateTime fechaHora;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attendance_id", nullable = false)
     private AttendanceRecord asistencia;

@@ -3,6 +3,7 @@ package com.rrhh.dashboard.Asistencia.services;
 import com.rrhh.dashboard.Asistencia.Entity.AttendanceRecord;
 import com.rrhh.dashboard.Asistencia.Entity.EstadoVerificacionFacial;
 import com.rrhh.dashboard.Asistencia.Repository.AttendanceRecordRepository;
+import com.rrhh.dashboard.Asistencia.websocket.AttendanceBroadcaster;
 import com.rrhh.dashboard.Asistencia.exceptions.AlreadyClockedInException;
 import com.rrhh.dashboard.Asistencia.exceptions.AlreadyClockedOutException;
 import com.rrhh.dashboard.Asistencia.exceptions.AttendanceRecordNotFoundException;
@@ -41,11 +42,14 @@ class AttendanceServiceTest {
     @Mock
     private ReconocimientoFacialClient reconocimientoFacialClient;
 
+    @Mock
+    private AttendanceBroadcaster attendanceBroadcaster;
+
     private AttendanceService service;
 
     @BeforeEach
     void setUp() {
-        service = new AttendanceService(repository, empleadoRepository, reconocimientoFacialClient, UMBRAL_AUTO);
+        service = new AttendanceService(repository, empleadoRepository, reconocimientoFacialClient, attendanceBroadcaster, UMBRAL_AUTO);
     }
 
     @Test
